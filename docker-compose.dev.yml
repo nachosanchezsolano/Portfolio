@@ -1,0 +1,32 @@
+services:
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    env_file:
+      - path: ./api/.env
+        required: false
+    environment:
+      ALLOWED_ORIGINS: http://localhost:4321
+    command: uvicorn frameworks_and_drivers.fastapi_app:app --host 0.0.0.0 --port 8000 --reload --reload-dir /app/src
+    volumes:
+      - ./api/src:/app/src
+    ports:
+      - "8000:8000"
+
+  web:
+    image: node:22-alpine
+    working_dir: /app
+    environment:
+      PUBLIC_API_URL: http://localhost:8000
+    command: sh -c "npm ci && npm run dev -- --host 0.0.0.0"
+    volumes:
+      - ./apps/web:/app
+      - web_node_modules:/app/node_modules
+    ports:
+      - "4321:4321"
+    depends_on:
+      - api
+
+volumes:
+  web_node_modules:

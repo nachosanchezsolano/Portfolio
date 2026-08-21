@@ -1,0 +1,29 @@
+:root {
+  /* Foundations */
+  --color-bg-primary: #080b12;
+  --color-bg-secondary: #111827;
+  --color-bg-tertiary: #1e293b;
+  --color-border: #334155;
+
+  /* Content */
+  --color-text-primary: #f8fafc;
+  --color-text-secondary: #94a3b8;
+  --color-text-tertiary: #64748b;
+
+  /* Semantic accents */
+  --color-interaction: #8b5cf6;
+  --color-interaction-hover: #a78bfa;
+  --color-intelligence: #22d3ee;
+  --color-storytelling: #f472b6;
+  --color-danger: #fb7185;
+
+  /* Backward-compatible aliases used by the current prototype. */
+  --black: var(--color-bg-primary);
+  --black-soft: var(--color-bg-secondary);
+  --panel: var(--color-bg-secondary);
+  --text: var(--color-text-primary);
+  --muted: var(--color-text-secondary);
+  --line: var(--color-border);
+  --accent: var(--color-interaction);
+  --green: var(--color-intelligence);
+}
