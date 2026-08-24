@@ -71,12 +71,18 @@ SearchPortfolio
 Ports define replaceable external capabilities:
 
 ```text
-KnowledgeSource
-DocumentRepository
-VectorStore
-EmbeddingProvider
-LanguageModel
-JobQueue
+model_ports.py
+  IntentResolver
+  LanguageModel
+
+retrieval_ports.py
+  KnowledgeRetriever
+  SessionRepository
+
+security_ports.py
+  RequestSecurity
+  SyntacticSanitizer
+  SemanticSanitizer
 ```
 
 ### Interface adapters
@@ -96,7 +102,11 @@ HTTP presenters
 Concrete implementations belong here:
 
 ```text
-FastAPI
+FastAPI / ASGI
+Cloudflare Workers AI
+Cloudflare Vectorize
+Cloudflare Rate Limiting adapter
+Local deterministic providers
 SQLAlchemy / PostgreSQL
 pgvector
 OpenRouter HTTP client
@@ -104,6 +114,40 @@ Markdown parser
 Docker
 Railway
 ```
+
+## Provider composition
+
+The runtime selects concrete providers in the composition root only:
+
+```text
+Local FastAPI app
+  → local models + memory retriever + in-memory security
+
+Cloudflare Worker
+  → Workers AI + Vectorize + Cloudflare security adapter
+```
+
+The application layer receives the same ports in both runtimes. It never imports
+Cloudflare, OpenAI, FastAPI or a rate-limiting implementation.
+
+## Security boundary
+
+Security is split into three responsibilities:
+
+```text
+HTTP security controller
+  → translates Request into client_id and credentials
+
+RequestSecurity port
+  → applies authentication and abuse-prevention policy
+
+Syntactic/Semantic sanitizer ports
+  → reject unsafe syntax and unsupported prompt instructions
+```
+
+The current local and Cloudflare adapters use an in-memory policy as a safe fallback.
+The production edge policy can later be replaced by Cloudflare Rate Limiting or a
+distributed repository without modifying the HTTP controller or use cases.
 
 ## Indexing pipeline
 

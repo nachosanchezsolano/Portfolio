@@ -1,14 +1,15 @@
 import type { ChatMessage } from "../entities/chat";
 
-type ChatResponse = { message: string; sources?: string[] };
+type ChatResponse = { message: string; sources?: string[]; session_id?: string };
 
 const apiUrl = import.meta.env.PUBLIC_API_URL || "http://localhost:8000";
+const sessionId = crypto.randomUUID();
 
 export const askPortfolio = async (message: string, signal?: AbortSignal): Promise<ChatMessage> => {
   const response = await fetch(`${apiUrl}/v1/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message }),
+    body: JSON.stringify({ message, session_id: sessionId }),
     signal,
   });
 

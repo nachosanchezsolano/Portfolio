@@ -1,4 +1,8 @@
-# Production deployment with GitHub and Cloudflare
+# Production deployment with GitHub and Cloudflare (legacy alternative)
+
+> La API actual está preparada para Cloudflare Workers + Workers AI + Vectorize.
+> Para el flujo recomendado, usar [DEPLOYMENT_CLOUDFLARE_WORKERS.md](DEPLOYMENT_CLOUDFLARE_WORKERS.md).
+> Este documento conserva una alternativa de frontend en Pages y API Dockerizada.
 
 This guide covers the current repository state:
 

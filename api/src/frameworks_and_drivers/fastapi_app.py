@@ -1,50 +1,78 @@
-from collections import defaultdict
-from time import monotonic
-from fastapi import Depends, FastAPI, Header, HTTPException, Request
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from application.ask_portfolio import AskPortfolio
-from frameworks_and_drivers.local_assistant import LocalPortfolioAssistant
-from frameworks_and_drivers.memory_retriever import MemoryRetriever
+
+from application.chat_controller import ChatFlowController
+from application.use_cases.detect_intent import DetectIntent
+from application.use_cases.rag_query import RagQuery
+from application.use_cases.response_chat import ResponseChat
+from application.use_cases.sanitize_message import SanitizeMessage
+from entities.chat import DomainValidationError
+from application.ports.security_ports import RequestSecurity
+from frameworks_and_drivers.in_memory_session_repository import InMemorySessionRepository
+from frameworks_and_drivers.providers.local.models import LocalIntentResolver, LocalLanguageModel
+from frameworks_and_drivers.local_semantic_sanitizer import LocalSemanticSanitizer
+from frameworks_and_drivers.providers.local.retrieval import MemoryRetriever
 from frameworks_and_drivers.settings import get_settings
 from interface_adapters.controllers import ChatController
-from interface_adapters.schemas import AskRequest, AskResponse
+from interface_adapters.security.request_security_controller import RequestSecurityController
+from interface_adapters.schemas import ChatInput, ChatOutput
 
 settings = get_settings()
-controller = ChatController(AskPortfolio(LocalPortfolioAssistant(MemoryRetriever()), settings.max_message_length))
-app = FastAPI(title="Portfolio Assistant API", version="0.1.0")
-app.add_middleware(CORSMiddleware, allow_origins=settings.origins, allow_methods=["POST", "GET"], allow_headers=["*"])
-requests_by_client: dict[str, list[float]] = defaultdict(list)
 
 
-@app.middleware("http")
-async def security_headers(request: Request, call_next):
-    response = await call_next(request)
-    response.headers["X-Content-Type-Options"] = "nosniff"
-    response.headers["X-Frame-Options"] = "DENY"
-    response.headers["Referrer-Policy"] = "no-referrer"
-    return response
+def create_app(controller: ChatController, security: RequestSecurity) -> FastAPI:
+    application = FastAPI(title="Portfolio Assistant API", version="0.1.0")
+    security_controller = RequestSecurityController(security)
+    application.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.origins,
+        allow_methods=["POST", "GET"],
+        allow_headers=["*"],
+    )
+
+    @application.middleware("http")
+    async def security_headers(request: Request, call_next):
+        response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Referrer-Policy"] = "no-referrer"
+        return response
+
+    @application.get("/health")
+    async def health() -> dict[str, str]:
+        return {"status": "ok"}
+
+    @application.post("/v1/chat", response_model=ChatOutput, dependencies=[Depends(security_controller.protect)])
+    async def chat(request: ChatInput) -> ChatOutput:
+        try:
+            return await controller.ask(request)
+        except DomainValidationError as error:
+            raise HTTPException(status_code=400, detail=str(error)) from error
+
+    return application
 
 
-async def protect(request: Request, x_api_key: str | None = Header(default=None)) -> None:
-    now = monotonic()
-    client = request.client.host if request.client else "unknown"
-    recent = [stamp for stamp in requests_by_client[client] if now - stamp < settings.rate_limit_window_seconds]
-    if len(recent) >= settings.rate_limit_requests:
-        raise HTTPException(status_code=429, detail="rate limit exceeded")
-    recent.append(now)
-    requests_by_client[client] = recent
-    if settings.api_key and x_api_key != settings.api_key:
-        raise HTTPException(status_code=401, detail="invalid api key")
+def build_local_controller() -> ChatController:
+    flow = ChatFlowController(
+        sanitizer=SanitizeMessage(LocalSemanticSanitizer()),
+        intent=DetectIntent(LocalIntentResolver()),
+        rag=RagQuery(MemoryRetriever()),
+        response=ResponseChat(LocalLanguageModel()),
+        sessions=InMemorySessionRepository(),
+    )
+    from frameworks_and_drivers.providers.local.security import InMemorySyntacticSanitizer
+
+    return ChatController(flow, InMemorySyntacticSanitizer())
 
 
-@app.get("/health")
-async def health() -> dict[str, str]:
-    return {"status": "ok"}
+def build_local_security() -> RequestSecurity:
+    from frameworks_and_drivers.providers.local.security import InMemoryRequestSecurity
+
+    return InMemoryRequestSecurity(
+        api_key=settings.api_key,
+        max_requests=settings.rate_limit_requests,
+        window_seconds=settings.rate_limit_window_seconds,
+    )
 
 
-@app.post("/v1/chat", response_model=AskResponse, dependencies=[Depends(protect)])
-async def chat(request: AskRequest) -> AskResponse:
-    try:
-        return await controller.ask(request)
-    except ValueError as error:
-        raise HTTPException(status_code=400, detail=str(error)) from error
+app = create_app(build_local_controller(), build_local_security())
