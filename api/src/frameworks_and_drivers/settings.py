@@ -3,6 +3,8 @@ from typing import Any
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from frameworks_and_drivers.cloudflare_context import to_python
+
 
 class Settings(BaseSettings):
     app_env: str = "development"
@@ -20,13 +22,19 @@ class Settings(BaseSettings):
 
 def settings_from_worker_env(env: Any) -> Settings:
     """Build settings from Cloudflare Worker bindings at request runtime."""
+
+    def binding(name: str, default: Any) -> Any:
+        value = getattr(env, name, default)
+        converted = to_python(value)
+        return default if converted is None else converted
+
     values = {
-        "app_env": getattr(env, "APP_ENV", "production"),
-        "allowed_origins": getattr(env, "ALLOWED_ORIGINS", ""),
-        "api_key": getattr(env, "API_KEY", ""),
-        "max_message_length": getattr(env, "MAX_MESSAGE_LENGTH", 1200),
-        "rate_limit_requests": getattr(env, "RATE_LIMIT_REQUESTS", 30),
-        "rate_limit_window_seconds": getattr(env, "RATE_LIMIT_WINDOW_SECONDS", 60),
+        "app_env": binding("APP_ENV", "production"),
+        "allowed_origins": binding("ALLOWED_ORIGINS", ""),
+        "api_key": binding("API_KEY", ""),
+        "max_message_length": binding("MAX_MESSAGE_LENGTH", 1200),
+        "rate_limit_requests": binding("RATE_LIMIT_REQUESTS", 30),
+        "rate_limit_window_seconds": binding("RATE_LIMIT_WINDOW_SECONDS", 60),
     }
     return Settings(**values)
 

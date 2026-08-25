@@ -20,3 +20,15 @@ def test_worker_settings_read_cloudflare_bindings() -> None:
     ]
     assert settings.rate_limit_requests == 30
     assert settings.rate_limit_window_seconds == 60
+
+
+def test_worker_settings_convert_js_proxy_bindings() -> None:
+    class JsProxyString:
+        def to_py(self) -> str:
+            return "https://nachosanchez.com.ar"
+
+    settings = settings_from_worker_env(
+        SimpleNamespace(ALLOWED_ORIGINS=JsProxyString())
+    )
+
+    assert settings.origins == ["https://nachosanchez.com.ar"]
