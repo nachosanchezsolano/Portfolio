@@ -7,7 +7,7 @@ from frameworks_and_drivers.providers.cloudflare.ai import CloudflareIntentResol
 from frameworks_and_drivers.in_memory_session_repository import InMemorySessionRepository
 from frameworks_and_drivers.local_semantic_sanitizer import LocalSemanticSanitizer
 from frameworks_and_drivers.providers.cloudflare.security import CloudflareRequestSecurity
-from frameworks_and_drivers.settings import get_settings
+from frameworks_and_drivers.settings import Settings, settings_from_worker_env
 
 
 def build_cloudflare_flow() -> ChatFlowController:
@@ -20,8 +20,8 @@ def build_cloudflare_flow() -> ChatFlowController:
     )
 
 
-def build_cloudflare_security() -> CloudflareRequestSecurity:
-    settings = get_settings()
+def build_cloudflare_security(env) -> CloudflareRequestSecurity:
+    settings: Settings = settings_from_worker_env(env)
     return CloudflareRequestSecurity(
         api_key=settings.api_key,
         max_requests=settings.rate_limit_requests,

@@ -8,17 +8,15 @@ from interface_adapters.controllers import ChatController
 from frameworks_and_drivers.providers.cloudflare.security import InMemorySyntacticSanitizer
 
 
-# The HTTP contract and all domain/application code stay in FastAPI.
-app = create_app(
-    ChatController(build_cloudflare_flow(), InMemorySyntacticSanitizer()),
-    build_cloudflare_security(),
-)
-
-
 class Default(WorkerEntrypoint):
     async def fetch(self, request):
         token = set_worker_env(self.env)
         try:
-            return await asgi.fetch(app, request, self.env)
+            # Build the adapter at runtime so Wrangler vars are available to CORS/security.
+            application = create_app(
+                ChatController(build_cloudflare_flow(), InMemorySyntacticSanitizer()),
+                build_cloudflare_security(self.env),
+            )
+            return await asgi.fetch(application, request, self.env)
         finally:
             reset_worker_env(token)

@@ -12,20 +12,22 @@ from frameworks_and_drivers.in_memory_session_repository import InMemorySessionR
 from frameworks_and_drivers.providers.local.models import LocalIntentResolver, LocalLanguageModel
 from frameworks_and_drivers.local_semantic_sanitizer import LocalSemanticSanitizer
 from frameworks_and_drivers.providers.local.retrieval import MemoryRetriever
-from frameworks_and_drivers.settings import get_settings
+from frameworks_and_drivers.settings import Settings, get_settings
 from interface_adapters.controllers import ChatController
 from interface_adapters.security.request_security_controller import RequestSecurityController
 from interface_adapters.schemas import ChatInput, ChatOutput
 
-settings = get_settings()
-
-
-def create_app(controller: ChatController, security: RequestSecurity) -> FastAPI:
+def create_app(
+    controller: ChatController,
+    security: RequestSecurity,
+    settings: Settings | None = None,
+) -> FastAPI:
+    runtime_settings = settings or get_settings()
     application = FastAPI(title="Portfolio Assistant API", version="0.1.0")
     security_controller = RequestSecurityController(security)
     application.add_middleware(
         CORSMiddleware,
-        allow_origins=settings.origins,
+        allow_origins=runtime_settings.origins,
         allow_methods=["POST", "GET"],
         allow_headers=["*"],
     )
@@ -69,9 +71,9 @@ def build_local_security() -> RequestSecurity:
     from frameworks_and_drivers.providers.local.security import InMemoryRequestSecurity
 
     return InMemoryRequestSecurity(
-        api_key=settings.api_key,
-        max_requests=settings.rate_limit_requests,
-        window_seconds=settings.rate_limit_window_seconds,
+        api_key=get_settings().api_key,
+        max_requests=get_settings().rate_limit_requests,
+        window_seconds=get_settings().rate_limit_window_seconds,
     )
 
 
