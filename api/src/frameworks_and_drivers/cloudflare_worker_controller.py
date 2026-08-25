@@ -20,8 +20,7 @@ def build_cloudflare_flow() -> ChatFlowController:
     )
 
 
-def build_cloudflare_security(env) -> CloudflareRequestSecurity:
-    settings: Settings = settings_from_worker_env(env)
+def build_cloudflare_security(settings: Settings) -> CloudflareRequestSecurity:
     return CloudflareRequestSecurity(
         api_key=settings.api_key,
         max_requests=settings.rate_limit_requests,
