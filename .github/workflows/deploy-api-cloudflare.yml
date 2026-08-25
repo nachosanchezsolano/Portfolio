@@ -70,6 +70,8 @@ jobs:
   frontend-build:
     name: Build portfolio frontend
     runs-on: ubuntu-latest
+    env:
+      PUBLIC_API_URL: ${{ vars.PUBLIC_API_URL }}
     defaults:
       run:
         working-directory: apps/web
@@ -95,6 +97,8 @@ jobs:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     needs: frontend-build
     runs-on: ubuntu-latest
+    env:
+      PUBLIC_API_URL: ${{ vars.PUBLIC_API_URL }}
     defaults:
       run:
         working-directory: apps/web
