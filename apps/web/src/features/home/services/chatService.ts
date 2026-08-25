@@ -2,7 +2,11 @@ import type { ChatMessage } from "../entities/chat";
 
 type ChatResponse = { message: string; sources?: string[]; session_id?: string };
 
-const apiUrl = import.meta.env.PUBLIC_API_URL || "http://localhost:8000";
+const apiUrl = import.meta.env.PUBLIC_API_URL || (
+  import.meta.env.DEV
+    ? "http://localhost:8000"
+    : "https://porfolio-api.nachosanchez.com.ar"
+);
 const sessionId = crypto.randomUUID();
 
 export const askPortfolio = async (message: string, signal?: AbortSignal): Promise<ChatMessage> => {
