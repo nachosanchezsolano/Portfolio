@@ -101,6 +101,7 @@ The target Compose setup will be updated when PostgreSQL, pgvector, and the work
 
 ## Documentation
 
+- [Current project context — read this first in a new chat](docs/PROJECT_CONTEXT.md)
 - [Product definition](docs/PRODUCT.md)
 - [Architecture](ARCHITECTURE.md)
 - [Content schema](docs/CONTENT_SCHEMA.md)
