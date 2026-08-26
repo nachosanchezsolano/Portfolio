@@ -8,15 +8,17 @@ from frameworks_and_drivers.in_memory_session_repository import InMemorySessionR
 from frameworks_and_drivers.local_semantic_sanitizer import LocalSemanticSanitizer
 from frameworks_and_drivers.providers.cloudflare.security import CloudflareRequestSecurity
 from frameworks_and_drivers.settings import Settings, settings_from_worker_env
+from application.ports.observability import Logger
 
 
-def build_cloudflare_flow() -> ChatFlowController:
+def build_cloudflare_flow(logger: Logger | None = None) -> ChatFlowController:
     return ChatFlowController(
         sanitizer=SanitizeMessage(LocalSemanticSanitizer()),
         intent=DetectIntent(CloudflareIntentResolver()),
         rag=RagQuery(CloudflareVectorizeRetriever()),
         response=ResponseChat(CloudflareLanguageModel()),
         sessions=InMemorySessionRepository(),
+        logger=logger,
     )
 
 

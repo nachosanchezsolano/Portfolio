@@ -2,6 +2,7 @@ from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from application.chat_controller import ChatFlowController
+from application.ports.observability import Logger, NoopLogger
 from application.use_cases.detect_intent import DetectIntent
 from application.use_cases.rag_query import RagQuery
 from application.use_cases.response_chat import ResponseChat
@@ -21,8 +22,10 @@ def create_app(
     controller: ChatController,
     security: RequestSecurity,
     settings: Settings | None = None,
+    logger: Logger | None = None,
 ) -> FastAPI:
     runtime_settings = settings or get_settings()
+    runtime_logger = logger or NoopLogger()
     application = FastAPI(title="Portfolio Assistant API", version="0.1.0")
     security_controller = RequestSecurityController(security)
     application.add_middleware(
@@ -34,10 +37,25 @@ def create_app(
 
     @application.middleware("http")
     async def security_headers(request: Request, call_next):
-        response = await call_next(request)
+        try:
+            response = await call_next(request)
+        except Exception as error:
+            runtime_logger.error(
+                "http_request_failed",
+                method=request.method,
+                path=request.url.path,
+                error_type=type(error).__name__,
+            )
+            raise
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["Referrer-Policy"] = "no-referrer"
+        runtime_logger.info(
+            "http_request_completed",
+            method=request.method,
+            path=request.url.path,
+            status_code=response.status_code,
+        )
         return response
 
     @application.get("/health")
