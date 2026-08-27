@@ -20,7 +20,7 @@
 
 - [ ] Implement Markdown source adapter.
 - [ ] Validate YAML frontmatter.
-- [ ] Implement semantic section chunking.
+- [x] Implement semantic section chunking for the Cloudflare Vectorize ingestion.
 - [ ] Add content hashes and change detection.
 - [ ] Add PostgreSQL-backed indexing jobs.
 - [ ] Add the worker.

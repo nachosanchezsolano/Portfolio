@@ -7,7 +7,6 @@ class LocalSemanticSanitizer:
     """Deterministic safety boundary until an AI guardrail is configured."""
 
     _blocked_patterns = (
-        r"```",
         r"<\s*script",
         r"\b(?:select|insert|update|delete|drop|alter|create)\b[\s\S]{0,80}\b(?:from|table|database|where|into)\b",
         r"\b(?:union\s+select|exec(?:ute)?|xp_cmdshell|information_schema)\b",
@@ -22,4 +21,9 @@ class LocalSemanticSanitizer:
         value = message.value
         if any(re.search(pattern, value, re.IGNORECASE) for pattern in self._blocked_patterns):
             raise DomainValidationError("message contains an unsupported or unsafe instruction")
-        return MessageInput(" ".join(value.split()))
+        parts = re.split(r"(```[\s\S]*?```)", value)
+        normalized = "".join(
+            part if part.startswith("```") else " ".join(part.split())
+            for part in parts
+        ).strip()
+        return MessageInput(normalized)

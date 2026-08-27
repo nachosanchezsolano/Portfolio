@@ -82,6 +82,7 @@ class IntentDecision:
 class RetrievedChunk:
     source: str
     content: str
+    score: float | None = None
 
 
 @dataclass(frozen=True)

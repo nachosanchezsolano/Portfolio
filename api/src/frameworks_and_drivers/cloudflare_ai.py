@@ -13,6 +13,15 @@ EMBEDDING_MODEL = "@cf/baai/bge-base-en-v1.5"
 CHAT_MODEL = "@cf/meta/llama-3.1-8b-instruct-fp8"
 
 
+def limit_words_preserving_format(text: str, limit: int = 500) -> str:
+    """Limit model output without destroying Markdown whitespace or code blocks."""
+
+    matches = list(re.finditer(r"\S+", text))
+    if len(matches) <= limit:
+        return text.strip()
+    return text[: matches[limit - 1].end()].rstrip()
+
+
 async def run_ai(model: str, payload: dict[str, Any]) -> Any:
     env = get_worker_env()
     result = await env.AI.run(model, payload)
@@ -67,7 +76,9 @@ class CloudflareVectorizeRetriever(KnowledgeRetriever):
             content = metadata.get("content") or metadata.get("text")
             source = metadata.get("source") or match.get("id")
             if content and source:
-                chunks.append(RetrievedChunk(str(source), str(content)))
+                raw_score = match.get("score")
+                score = float(raw_score) if isinstance(raw_score, (int, float)) else None
+                chunks.append(RetrievedChunk(str(source), str(content), score))
         return chunks
 
 
@@ -86,14 +97,22 @@ class CloudflareLanguageModel(LanguageModel):
             {
                 "messages": [
                     {"role": "system", "content": prompt.system},
-                    {"role": "user", "content": prompt.user},
+                    {
+                        "role": "user",
+                        "content": f"<user_question>\n{prompt.user}\n</user_question>",
+                    },
                 ],
                 "temperature": 0.2,
                 "max_tokens": 700,
             },
         )
         text = str(result.get("response", "")) if isinstance(result, dict) else str(result)
-        text = " ".join(text.split()[:500])
+        text = limit_words_preserving_format(text)
+        if not text:
+            return ChatAnswer(
+                MessageOutput("No pude generar una respuesta en este momento."),
+                intent=prompt.intent,
+            )
         return ChatAnswer(
             MessageOutput(text),
             tuple(chunk.source for chunk in prompt.context),

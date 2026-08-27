@@ -66,6 +66,7 @@ class ChatFlowController:
             "rag_completed",
             duration_ms=round((perf_counter() - stage_started) * 1000, 2),
             context_count=len(context),
+            retrieval_scores=[chunk.score for chunk in context if chunk.score is not None],
         )
 
         stage_started = perf_counter()

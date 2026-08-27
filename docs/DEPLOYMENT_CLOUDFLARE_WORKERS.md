@@ -34,7 +34,7 @@ uv sync --group dev
 uv run pytest -q -m "not token"
 ```
 
-La suite offline debe terminar con 50 passed y no consumir tokens.
+La suite offline debe terminar con 62 passed y no consumir tokens.
 
 ## 2. Autenticar Wrangler
 
@@ -82,7 +82,15 @@ Crear el índice no carga documentos. Cada vector debe incluir metadata:
 }
 ```
 
-El retriever utiliza source como cita y content como contexto para el modelo.
+El retriever utiliza source como cita, content como contexto y section/chunk_index
+para identificar cada fragmento. Las notas públicas se dividen por secciones y
+tamaño antes de generar embeddings. Después de modificar la base de conocimiento
+hay que volver a ejecutar:
+
+```powershell
+uv run python knowledge-base/scripts/upsert_vectorize.py
+```
+
 Sin vectores cargados, la API desplegará correctamente pero devolverá el fallback
 de evidencia insuficiente.
 

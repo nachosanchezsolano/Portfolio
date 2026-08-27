@@ -31,7 +31,6 @@ class InMemorySyntacticSanitizer:
     """Framework-independent request syntax boundary."""
 
     _unsafe_patterns = (
-        r"```",
         r"<\s*script",
         r"\b(?:select|insert|update|delete|drop|alter|create)\b[\s\S]{0,80}"
         r"\b(?:from|table|database|where|into)\b",
@@ -42,4 +41,8 @@ class InMemorySyntacticSanitizer:
     def sanitize(self, value: str) -> str:
         if any(re.search(pattern, value, re.IGNORECASE) for pattern in self._unsafe_patterns):
             raise DomainValidationError("message contains unsafe syntax")
-        return " ".join(value.split())
+        parts = re.split(r"(```[\s\S]*?```)", value)
+        return "".join(
+            part if part.startswith("```") else " ".join(part.split())
+            for part in parts
+        ).strip()

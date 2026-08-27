@@ -61,7 +61,7 @@ Los proveedores concretos están en
 
 - La API responde `GET /health` con `200`.
 - El preflight CORS para `https://nachosanchez.com.ar` responde `200`.
-- Los tests de la API pasan localmente: `50 passed`.
+- Los tests offline de la API pasan localmente: `62 passed`.
 - CORS configurado para:
   - `https://nachosanchez.com.ar`
   - `https://www.nachosanchez.com.ar`
@@ -83,11 +83,14 @@ Vectorize debe usar:
 index: portfolio-knowledge
 dimensions: 768
 metric: cosine
-metadata mínima: source, content
+metadata mínima: source, content, section, chunk_index
 ```
 
 Crear el índice no carga documentos. La ingesta de embeddings y metadata es un
 requisito independiente para que el chat pueda responder con evidencia.
+La ingesta actual divide las 14 notas públicas en chunks determinísticos antes
+de generar embeddings. Si cambia el contenido o el esquema de chunking, hay que
+volver a ejecutar `knowledge-base/scripts/upsert_vectorize.py`.
 
 ## Observabilidad
 
@@ -138,6 +141,7 @@ tarea requiera entender decisiones de diseño más amplias.
 - No cambiar el proveedor de IA sin pasar por los ports de aplicación.
 - No poner secretos en variables `PUBLIC_` ni en el bundle del frontend.
 - Mantener las respuestas limitadas a evidencia recuperada.
+- Preservar la estructura Markdown de las respuestas, incluidos bloques de código.
 - Agregar o actualizar tests cuando cambie un contrato o una regla de negocio.
 - Antes de afirmar que un problema está resuelto, revisar tests, workflow y
   comportamiento real del endpoint publicado.

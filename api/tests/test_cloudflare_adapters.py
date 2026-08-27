@@ -6,6 +6,7 @@ from frameworks_and_drivers.cloudflare_ai import (
     CloudflareIntentResolver,
     CloudflareLanguageModel,
     CloudflareVectorizeRetriever,
+    limit_words_preserving_format,
 )
 from frameworks_and_drivers.cloudflare_context import reset_worker_env, set_worker_env
 from frameworks_and_drivers.cloudflare_ai import CHAT_MODEL, EMBEDDING_MODEL, INTENT_MODEL
@@ -35,6 +36,7 @@ class FakeVectorize:
                         "source": "profile/now.md",
                         "content": "Portfolio evidence",
                     },
+                    "score": 0.91,
                 }
             ]
         }
@@ -92,6 +94,7 @@ def test_cloudflare_retriever_embeds_query_and_reads_vector_metadata() -> None:
 
     assert chunks[0].source == "profile/now.md"
     assert chunks[0].content == "Portfolio evidence"
+    assert chunks[0].score == 0.91
     assert env.AI.calls[0] == (EMBEDDING_MODEL, {"text": ["architecture"]})
     assert env.VECTORIZE.calls == [([0.1, 0.2, 0.3], {"topK": 4, "returnMetadata": "all"})]
 
@@ -116,10 +119,59 @@ def test_cloudflare_language_model_is_grounded_and_returns_sources() -> None:
     assert answer.sources == ("profile/now.md",)
     model, payload = env.AI.calls[0]
     assert model == CHAT_MODEL
-    assert payload["messages"][-1] == {"role": "user", "content": "What do you build?"}
+    assert payload["messages"][-1]["role"] == "user"
+    assert payload["messages"][-1]["content"] == "<user_question>\nWhat do you build?\n</user_question>"
     assert "Evidence" in payload["messages"][0]["content"]
     assert payload["temperature"] == 0.2
     assert payload["max_tokens"] == 700
+    assert "<retrieved_context>" in payload["messages"][0]["content"]
+    assert "</retrieved_context>" in payload["messages"][0]["content"]
+
+
+def test_cloudflare_language_model_preserves_markdown_format() -> None:
+    env = FakeEnv([{"response": "Respuesta\n\n- **Astro**\n- Cloudflare\n\n```js\nconst x = 1;\n```"}])
+    token = set_worker_env(env)
+    try:
+        answer = asyncio.run(
+            CloudflareLanguageModel().answer(
+                BuildResponsePrompt().build(
+                    MessageInput("¿Qué tecnologías usás?"),
+                    IntentDecision(Intent.TECHNICAL, "technologies", 1),
+                    [RetrievedChunk("profile/now.md", "Evidence")],
+                )
+            )
+        )
+    finally:
+        reset_worker_env(token)
+
+    assert "\n- **Astro**" in answer.message.value
+    assert "```js" in answer.message.value
+
+
+def test_limit_words_preserving_format_truncates_without_flattening() -> None:
+    value = "first\n\n- second\n\n```js\nconst x = 1;\n```"
+
+    assert limit_words_preserving_format(value, 100) == value
+    assert "\n\n- second" in limit_words_preserving_format(value, 3)
+
+
+def test_cloudflare_language_model_falls_back_on_empty_model_output() -> None:
+    env = FakeEnv([{"response": ""}])
+    token = set_worker_env(env)
+    try:
+        answer = asyncio.run(
+            CloudflareLanguageModel().answer(
+                BuildResponsePrompt().build(
+                    MessageInput("¿Qué hacés?"),
+                    IntentDecision(Intent.GENERAL, "portfolio", 1),
+                    [RetrievedChunk("profile/now.md", "Evidence")],
+                )
+            )
+        )
+    finally:
+        reset_worker_env(token)
+
+    assert "No pude generar" in answer.message.value
 
 
 def test_cloudflare_language_model_returns_safe_fallback_without_context() -> None:

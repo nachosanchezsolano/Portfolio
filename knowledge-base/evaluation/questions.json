@@ -1,0 +1,38 @@
+[
+  {
+    "id": "profile-001",
+    "question": "¿En qué tipo de oportunidades estás interesado?",
+    "expected": "Busco oportunidades de Full Stack Development y AI Engineering, incluyendo opciones remotas internacionales y posiciones presenciales o híbridas en Córdoba.",
+    "relevant_sources": ["profile/profile-es.md"]
+  },
+  {
+    "id": "profile-002",
+    "question": "¿Qué principios guían tu forma de construir software?",
+    "expected": "Priorizo soluciones simples, seguras, observables y fáciles de evolucionar.",
+    "relevant_sources": ["profile/principles.md"]
+  },
+  {
+    "id": "project-001",
+    "question": "¿Qué hiciste en Estudio Chingón?",
+    "expected": "Trabajé en la estética, la organización del contenido, el SEO y la evolución técnica de sus sitios, y actualmente lidero proyectos web para clientes.",
+    "relevant_sources": ["projects/estudio-chingon-es.md"]
+  },
+  {
+    "id": "project-002",
+    "question": "¿Cómo construiste el sitio de Grupo Eurosa?",
+    "expected": "Desarrollé una web con Next.js integrada con WordPress mediante GraphQL y adaptada al servidor existente en DonWeb.",
+    "relevant_sources": ["projects/grupo-eurosa-es.md"]
+  },
+  {
+    "id": "project-003",
+    "question": "¿Qué parte del sistema de ventas con IA está operativa?",
+    "expected": "El sistema de agentes, catálogo, agendamiento, carga de Ads, métricas y observabilidad están operativos en pruebas cerradas; WhatsApp, multiempresa y links de pago todavía no.",
+    "relevant_sources": ["projects/ai-sales-chatbot-es.md"]
+  },
+  {
+    "id": "profile-003",
+    "question": "¿Qué materias o tecnologías enseñás?",
+    "expected": "Enseño Python, C++, JavaScript, desarrollo web, Arduino, estructuras de datos, Scrum, ética, legislación y testing.",
+    "relevant_sources": ["profile/profile-es.md"]
+  }
+]
