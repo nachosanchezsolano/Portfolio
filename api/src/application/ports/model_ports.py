@@ -1,6 +1,6 @@
 from typing import Protocol
 
-from entities.chat import ChatAnswer, IntentDecision, MessageInput, ResponsePrompt
+from entities.chat import ChatAnswer, ConversationTurn, IntentDecision, MessageInput, ResponsePrompt, RetrievedChunk
 
 
 class IntentResolver(Protocol):
@@ -12,4 +12,10 @@ class LanguageModel(Protocol):
 
 
 class ResponsePromptBuilder(Protocol):
-    def build(self, message: MessageInput, decision, context) -> ResponsePrompt: ...
+    def build(
+        self,
+        message: MessageInput,
+        decision: IntentDecision,
+        context: list[RetrievedChunk],
+        conversation: list[ConversationTurn] | None = None,
+    ) -> ResponsePrompt: ...

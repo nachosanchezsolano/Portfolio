@@ -45,10 +45,17 @@ class MessageOutput:
             raise DomainValidationError(f"response cannot exceed {MAX_MESSAGE_WORDS} words")
 
 
+@dataclass(frozen=True)
+class ConversationTurn:
+    user: str
+    assistant: str
+
+
 @dataclass
 class ChatSession:
     session_id: str
     messages: list[MessageInput] = field(default_factory=list)
+    turns: list[ConversationTurn] = field(default_factory=list)
 
     def ensure_can_receive(self) -> None:
         if len(self.messages) >= MAX_SESSION_MESSAGES:
@@ -59,6 +66,9 @@ class ChatSession:
     def add_message(self, message: MessageInput) -> None:
         self.ensure_can_receive()
         self.messages.append(message)
+
+    def add_turn(self, user: MessageInput, assistant: MessageOutput) -> None:
+        self.turns.append(ConversationTurn(user.value, assistant.value))
 
 
 @dataclass(frozen=True)
@@ -80,6 +90,7 @@ class ResponsePrompt:
     user: str
     intent: Intent
     context: tuple[RetrievedChunk, ...] = ()
+    conversation_history: tuple[ConversationTurn, ...] = ()
 
 
 @dataclass(frozen=True)

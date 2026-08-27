@@ -69,7 +69,7 @@ class ChatFlowController:
         )
 
         stage_started = perf_counter()
-        answer = await self._response.execute(message, decision, context)
+        answer = await self._response.execute(message, decision, context, session.turns)
         self._logger.info(
             "response_generated",
             duration_ms=round((perf_counter() - stage_started) * 1000, 2),
@@ -78,6 +78,7 @@ class ChatFlowController:
             fallback=not bool(context),
         )
         answer = ChatAnswer(answer.message, answer.sources, answer.intent, session.session_id)
+        session.add_turn(message, answer.message)
         await self._sessions.save(session)
         self._logger.info(
             "chat_flow_completed",
