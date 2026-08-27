@@ -66,6 +66,18 @@ body,
 .section-description,
 .chat-subtitle,
 .message-content p { text-wrap: pretty; }
+.message-content > :first-child { margin-top: 0; }
+.message-content > :last-child { margin-bottom: 0; }
+.message-content p + p { margin-top: .8em; }
+.message-content ul,
+.message-content ol { margin: .7em 0; padding-left: 1.45em; }
+.message-content li { margin: .28em 0; padding-left: .2em; }
+.message-content li::marker { color: var(--color-intelligence); font-weight: 700; }
+.message-content strong { color: var(--color-storytelling); font-weight: 650; }
+.message-content em { color: color-mix(in srgb, var(--color-text-primary) 88%, var(--color-intelligence)); }
+.message-content code { border: 1px solid color-mix(in srgb, var(--color-border) 80%, var(--color-intelligence)); border-radius: 5px; padding: .12em .34em; background: var(--color-bg-primary); color: var(--color-intelligence); font: .88em/1.5 'DM Mono', monospace; }
+.message-content pre { max-width: 100%; overflow-x: auto; margin: .85em 0; border: 1px solid var(--color-border); border-radius: 9px; padding: 13px 14px; background: var(--color-bg-primary); white-space: pre; }
+.message-content pre code { border: 0; padding: 0; background: transparent; color: var(--color-text-primary); }
 
 .sidebar,
 .chat-teaser,

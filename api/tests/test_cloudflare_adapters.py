@@ -172,6 +172,21 @@ def test_response_prompt_handles_greetings_and_ambiguous_questions_with_clarific
     assert "No hagas preguntas cuando la consulta ya sea clara" in prompt.system
 
 
+def test_response_prompt_defines_a_restrained_markdown_contract() -> None:
+    prompt = BuildResponsePrompt().build(
+        MessageInput("¿Qué tecnologías usaste?"),
+        IntentDecision(Intent.TECHNICAL, "technologies", 3),
+        [RetrievedChunk("projects/example.md", "Astro, Cloudflare y TypeScript")],
+    )
+
+    assert "párrafos simples por defecto" in prompt.system
+    assert "máximo de tres ideas" in prompt.system
+    assert "listas con '- '" in prompt.system
+    assert "bloques cercados" in prompt.system
+    assert "Dentro del código" in prompt.system
+    assert "No uses HTML" in prompt.system
+
+
 def test_response_prompt_keeps_only_recent_conversation_within_budget() -> None:
     old = ConversationTurn("old question", "old answer " + "x" * 2200)
     recent = ConversationTurn("recent question", "recent answer")
