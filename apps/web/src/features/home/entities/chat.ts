@@ -8,6 +8,7 @@ export type ChatMessage = {
   sources?: string[];
   intent?: ChatIntent;
   sessionId?: string;
+  observationId?: string;
 };
 
 export type ChatState = {

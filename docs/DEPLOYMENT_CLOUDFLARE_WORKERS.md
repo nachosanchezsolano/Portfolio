@@ -266,6 +266,43 @@ Limiting, Durable Objects o almacenamiento distribuido.
 InMemorySessionRepository tampoco persiste entre evictions o despliegues. Antes
 de usar sesiones persistentes, migrarlo a Durable Objects o D1.
 
+## 12. Trazabilidad del chat
+
+El chat genera un `visitor_id` pseudónimo en el navegador y la API guarda cada
+interacción en D1. `chat_sessions` registra una fila por conversación y
+`chat_messages` una fila por mensaje con pregunta original y sanitizada, query
+de recuperación, intención, chunks RAG con scores, prompts, respuesta final,
+fuentes, contexto, latencia y estado de corrección. No se guardan IP, user-agent
+completo, nombre ni email automáticamente.
+
+Crear la base y aplicar la migración desde `api`:
+
+```powershell
+npx wrangler d1 create portfolio-chat-db
+powershell -ExecutionPolicy Bypass -File api/scripts/wrangler-with-cloudflare-env.ps1 d1 migrations apply portfolio-chat-db --remote
+```
+
+Después agregar el binding `DB` en `api/wrangler.jsonc` usando el `database_id`
+devuelto por Wrangler y configurar el secret `ADMIN_API_KEY`:
+
+```powershell
+npx wrangler secret put ADMIN_API_KEY
+```
+
+La revisión se realiza con `X-Admin-Key`:
+
+```text
+GET /v1/admin/chat-observations?limit=100
+POST /v1/admin/chat-observations/{observation_id}/feedback?correctness=correct
+GET /v1/admin/chat-sessions?limit=100
+GET /v1/admin/chat-sessions/{session_id}/messages?limit=100
+POST /v1/admin/chat-messages/{message_id}/feedback?correctness=correct
+```
+
+Los valores permitidos para `correctness` son `correct`, `incorrect` y
+`needs_review`. El endpoint administrativo nunca debe exponerse con una key
+incluida en el frontend.
+
 Documentación: [SQLite Storage API de Durable Objects](https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/).
 
 ## Checklist

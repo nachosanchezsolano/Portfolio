@@ -29,6 +29,62 @@ class KnowledgeChunk:
     index: int
 
 
+@dataclass(frozen=True)
+class CloudflareCredentials:
+    account_id: str
+    token: str
+
+
+def _dotenv_values(path: Path) -> dict[str, str]:
+    if not path.exists():
+        return {}
+    values: dict[str, str] = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        key, separator, value = line.partition("=")
+        if separator:
+            values[key.strip()] = value.strip().strip('"').strip("'")
+    return values
+
+
+def _credential_value(values: dict[str, str], *names: str) -> str:
+    for name in names:
+        value = os.environ.get(name) or values.get(name)
+        if value:
+            return value.strip().strip('"').strip("'")
+    return ""
+
+
+def cloudflare_credentials() -> list[CloudflareCredentials]:
+    """Return preferred credentials first, with legacy credentials as fallback."""
+
+    local_values = _dotenv_values(ROOT.parent / "api" / ".env")
+    candidates = [
+        CloudflareCredentials(
+            _credential_value(local_values, "cloudflare-api-id", "CLOUDFLARE_API_ID"),
+            _credential_value(local_values, "cloudflare-api-token", "CLOUDFLARE_API_TOKEN"),
+        ),
+        CloudflareCredentials(
+            _credential_value(local_values, "IA_API_ACCOUNT"),
+            _credential_value(local_values, "IA_API_KEY"),
+        ),
+        CloudflareCredentials(
+            _credential_value(local_values, "CLOUDFLARE_ACCOUNT_ID"),
+            _credential_value(local_values, "CLOUDFLARE_API_TOKEN"),
+        ),
+    ]
+    return list(dict.fromkeys(candidate for candidate in candidates if candidate.account_id and candidate.token))
+
+
+def with_cloudflare_fallback(credentials: list[CloudflareCredentials], operation):
+    errors: list[str] = []
+    for credential in credentials:
+        try:
+            return operation(credential)
+        except RuntimeError as error:
+            errors.append(str(error))
+    raise RuntimeError("All Cloudflare credentials failed: " + " | ".join(errors))
+
+
 def public_documents() -> list[tuple[str, str]]:
     documents = []
     for path in sorted(VAULT.rglob("*.md")):
@@ -122,11 +178,14 @@ def api_json(url: str, token: str, payload: dict, *, content_type: str = "applic
     return result["result"]
 
 
-def embed_documents(account_id: str, token: str, documents: list[KnowledgeChunk]) -> list[list[float]]:
-    result = api_json(
-        f"https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/run/{EMBEDDING_MODEL}",
-        token,
-        {"text": [chunk.content for chunk in documents]},
+def embed_documents(credentials: list[CloudflareCredentials], documents: list[KnowledgeChunk]) -> list[list[float]]:
+    result = with_cloudflare_fallback(
+        credentials,
+        lambda credential: api_json(
+            f"https://api.cloudflare.com/client/v4/accounts/{credential.account_id}/ai/run/{EMBEDDING_MODEL}",
+            credential.token,
+            {"text": [chunk.content for chunk in documents]},
+        ),
     )
     vectors = result.get("data")
     if not isinstance(vectors, list) or len(vectors) != len(documents):
@@ -134,7 +193,7 @@ def embed_documents(account_id: str, token: str, documents: list[KnowledgeChunk]
     return vectors
 
 
-def upsert(account_id: str, token: str, index: str, documents: list[KnowledgeChunk], vectors: list[list[float]]) -> None:
+def upsert(credentials: list[CloudflareCredentials], index: str, documents: list[KnowledgeChunk], vectors: list[list[float]]) -> None:
     records = []
     for chunk, vector in zip(documents, vectors, strict=True):
         records.append(
@@ -156,23 +215,27 @@ def upsert(account_id: str, token: str, index: str, documents: list[KnowledgeChu
         'Content-Disposition: form-data; name="vectors"; filename="vectors.ndjson"\r\n'
         "Content-Type: application/x-ndjson\r\n\r\n"
     ).encode("utf-8") + ndjson + f"\r\n--{boundary}--\r\n".encode("utf-8")
-    request = Request(
-        f"https://api.cloudflare.com/client/v4/accounts/{account_id}/vectorize/v2/indexes/{index}/upsert",
-        data=body,
-        headers={
-            "Authorization": f"Bearer {token}",
-            "Content-Type": f"multipart/form-data; boundary={boundary}",
-        },
-        method="POST",
-    )
-    try:
-        with urlopen(request, timeout=120) as response:
-            result = json.loads(response.read().decode("utf-8"))
-    except HTTPError as error:
-        detail = error.read().decode("utf-8", errors="replace")
-        raise RuntimeError(f"Cloudflare API request failed ({error.code}): {detail}") from error
-    if not result.get("success", False):
-        raise RuntimeError(f"Cloudflare API request failed: {result}")
+    def send(credential: CloudflareCredentials):
+        request = Request(
+            f"https://api.cloudflare.com/client/v4/accounts/{credential.account_id}/vectorize/v2/indexes/{index}/upsert",
+            data=body,
+            headers={
+                "Authorization": f"Bearer {credential.token}",
+                "Content-Type": f"multipart/form-data; boundary={boundary}",
+            },
+            method="POST",
+        )
+        try:
+            with urlopen(request, timeout=120) as response:
+                result = json.loads(response.read().decode("utf-8"))
+        except HTTPError as error:
+            detail = error.read().decode("utf-8", errors="replace")
+            raise RuntimeError(f"Cloudflare API request failed ({error.code}): {detail}") from error
+        if not result.get("success", False):
+            raise RuntimeError(f"Cloudflare API request failed: {result}")
+        return result
+
+    result = with_cloudflare_fallback(credentials, send)
     print(f"mutation_id={result.get('result', {}).get('mutationId', 'unknown')}")
 
 
@@ -180,13 +243,12 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--index", default="portfolio-knowledge")
     args = parser.parse_args()
-    token = os.environ.get("CLOUDFLARE_API_TOKEN")
-    account_id = os.environ.get("CLOUDFLARE_ACCOUNT_ID")
-    if not token or not account_id:
-        raise SystemExit("Set CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID")
+    credentials = cloudflare_credentials()
+    if not credentials:
+        raise SystemExit("Set cloudflare-api-id/cloudflare-api-token or IA_API_ACCOUNT/IA_API_KEY in api/.env")
     documents = chunk_documents(public_documents())
-    vectors = embed_documents(account_id, token, documents)
-    upsert(account_id, token, args.index, documents, vectors)
+    vectors = embed_documents(credentials, documents)
+    upsert(credentials, args.index, documents, vectors)
     print(f"Upserted {len(documents)} public chunks into {args.index}")
 
 

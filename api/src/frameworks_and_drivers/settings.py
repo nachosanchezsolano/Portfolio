@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     app_env: str = "development"
     allowed_origins: str = "http://localhost:4321"
     api_key: str = ""
+    admin_api_key: str = ""
     max_message_length: int = 1200
     rate_limit_requests: int = 30
     rate_limit_window_seconds: int = 60
@@ -32,6 +33,7 @@ def settings_from_worker_env(env: Any) -> Settings:
         "app_env": binding("APP_ENV", "production"),
         "allowed_origins": binding("ALLOWED_ORIGINS", ""),
         "api_key": binding("API_KEY", ""),
+        "admin_api_key": binding("ADMIN_API_KEY", ""),
         "max_message_length": binding("MAX_MESSAGE_LENGTH", 1200),
         "rate_limit_requests": binding("RATE_LIMIT_REQUESTS", 30),
         "rate_limit_window_seconds": binding("RATE_LIMIT_WINDOW_SECONDS", 60),

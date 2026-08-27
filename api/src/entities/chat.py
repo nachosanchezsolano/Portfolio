@@ -100,6 +100,56 @@ class ChatAnswer:
     sources: tuple[str, ...] = ()
     intent: Intent = Intent.GENERAL
     session_id: str | None = None
+    observation_id: str | None = None
+
+
+@dataclass(frozen=True)
+class ChatObservation:
+    observation_id: str
+    visitor_id: str
+    session_id: str
+    question: str
+    answer: str
+    sources: tuple[str, ...]
+    intent: Intent
+    context_count: int
+    latency_ms: float
+    created_at: str
+    correctness: str | None = None
+    feedback_note: str | None = None
+
+
+@dataclass(frozen=True)
+class ChatMessageTrace:
+    message_id: str
+    session_id: str
+    visitor_id: str
+    turn_index: int
+    raw_question: str
+    sanitized_question: str
+    retrieval_query: str
+    intent: Intent
+    retrieved_context: tuple[RetrievedChunk, ...]
+    response_prompt_system: str
+    response_prompt_user: str
+    final_answer: str
+    sources: tuple[str, ...]
+    context_count: int
+    latency_ms: float
+    status: str
+    created_at: str
+    correctness: str | None = None
+    feedback_note: str | None = None
+
+
+@dataclass(frozen=True)
+class ChatSessionTrace:
+    session_id: str
+    visitor_id: str
+    started_at: str
+    last_seen_at: str
+    message_count: int
+    last_intent: Intent | None = None
 
 
 # Compatibility alias for adapters that still use the old name.

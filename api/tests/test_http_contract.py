@@ -9,12 +9,13 @@ from interface_adapters.schemas import ChatInput, ChatOutput
 
 
 class FakeFlow:
-    async def execute(self, message: str, session_id: str | None):
+    async def execute(self, message: str, session_id: str | None, visitor_id: str | None = None):
         return ChatAnswer(
             MessageOutput("respuesta segura"),
             ("profile/test.md",),
             Intent.GENERAL,
             session_id or "generated-session",
+            "observation-1",
         )
 
 
@@ -35,6 +36,13 @@ def test_http_controller_sanitizes_and_maps_response() -> None:
     assert response.sources == ["profile/test.md"]
     assert response.intent == "general"
     assert response.session_id == "session-1"
+    assert response.observation_id == "observation-1"
+
+
+def test_http_input_accepts_anonymous_visitor_id() -> None:
+    request = ChatInput(message="hello", visitor_id="visitor_123")
+
+    assert request.visitor_id == "visitor_123"
 
 
 def test_http_input_rejects_invalid_session_id() -> None:

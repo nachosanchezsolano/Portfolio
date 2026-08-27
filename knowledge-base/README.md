@@ -4,12 +4,11 @@ Este directorio se puede abrir como vault en Obsidian. Solo agregar información
 
 `scripts/build_index.py` genera un índice local ignorado por Git.
 
-Para cargar la base pública en Cloudflare Vectorize, usar el script de ingesta
-con credenciales únicamente en variables de entorno:
+Para cargar la base pública en Cloudflare Vectorize, usar el script de ingesta.
+Lee primero `cloudflare-api-id`/`cloudflare-api-token` desde `api/.env` y, si
+una llamada falla, prueba `IA_API_ACCOUNT`/`IA_API_KEY` como fallback:
 
 ```powershell
-$env:CLOUDFLARE_ACCOUNT_ID = "<account-id>"
-$env:CLOUDFLARE_API_TOKEN = "<token>"
 uv run python knowledge-base/scripts/upsert_vectorize.py
 ```
 

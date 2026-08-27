@@ -10,6 +10,7 @@ def test_worker_settings_read_cloudflare_bindings() -> None:
             ALLOWED_ORIGINS="https://nachosanchez.com.ar,https://www.nachosanchez.com.ar",
             RATE_LIMIT_REQUESTS="30",
             RATE_LIMIT_WINDOW_SECONDS="60",
+            ADMIN_API_KEY="admin-secret",
         )
     )
 
@@ -20,6 +21,7 @@ def test_worker_settings_read_cloudflare_bindings() -> None:
     ]
     assert settings.rate_limit_requests == 30
     assert settings.rate_limit_window_seconds == 60
+    assert settings.admin_api_key == "admin-secret"
 
 
 def test_worker_settings_convert_js_proxy_bindings() -> None:

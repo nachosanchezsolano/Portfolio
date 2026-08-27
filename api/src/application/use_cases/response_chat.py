@@ -15,5 +15,17 @@ class ResponseChat:
         context: list[RetrievedChunk],
         conversation: list[ConversationTurn] | None = None,
     ) -> ChatAnswer:
-        prompt = self._prompt_builder.build(message, decision, context, conversation)
+        prompt = self.build_prompt(message, decision, context, conversation)
+        return await self.execute_prompt(prompt)
+
+    def build_prompt(
+        self,
+        message: MessageInput,
+        decision: IntentDecision,
+        context: list[RetrievedChunk],
+        conversation: list[ConversationTurn] | None = None,
+    ):
+        return self._prompt_builder.build(message, decision, context, conversation)
+
+    async def execute_prompt(self, prompt):
         return await self._language_model.answer(prompt)

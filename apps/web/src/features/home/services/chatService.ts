@@ -5,6 +5,7 @@ export type ChatResponse = {
   sources: string[];
   intent: ChatIntent;
   session_id: string;
+  observation_id?: string | null;
 };
 
 const configuredApiUrl = import.meta.env.PUBLIC_API_URL || (
@@ -15,6 +16,9 @@ const configuredApiUrl = import.meta.env.PUBLIC_API_URL || (
 const apiUrl = configuredApiUrl.replace(/\/+$/, "");
 let sessionId = crypto.randomUUID();
 const REQUEST_TIMEOUT_MS = 15_000;
+const visitorStorageKey = "portfolio-chat-visitor-id";
+const visitorId = localStorage.getItem(visitorStorageKey) || crypto.randomUUID();
+localStorage.setItem(visitorStorageKey, visitorId);
 
 const isChatResponse = (value: unknown): value is ChatResponse => {
   if (!value || typeof value !== "object") return false;
@@ -38,7 +42,7 @@ export const askPortfolio = async (message: string, signal?: AbortSignal): Promi
     const response = await fetch(`${apiUrl}/v1/chat`, {
       method: "POST",
       headers: { "Accept": "application/json", "Content-Type": "application/json" },
-      body: JSON.stringify({ message, session_id: sessionId }),
+      body: JSON.stringify({ message, session_id: sessionId, visitor_id: visitorId }),
       signal: timeoutController.signal,
     });
 
@@ -53,6 +57,7 @@ export const askPortfolio = async (message: string, signal?: AbortSignal): Promi
       sources: payload.sources,
       intent: payload.intent,
       sessionId: payload.session_id,
+      observationId: payload.observation_id ?? undefined,
     };
   } finally {
     window.clearTimeout(timeoutId);

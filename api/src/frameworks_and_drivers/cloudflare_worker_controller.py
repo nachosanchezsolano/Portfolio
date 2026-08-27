@@ -14,6 +14,8 @@ from application.ports.observability import Logger
 def build_cloudflare_flow(
     logger: Logger | None = None,
     sessions: InMemorySessionRepository | None = None,
+    observations=None,
+    traces=None,
 ) -> ChatFlowController:
     return ChatFlowController(
         sanitizer=SanitizeMessage(LocalSemanticSanitizer()),
@@ -22,6 +24,8 @@ def build_cloudflare_flow(
         response=ResponseChat(CloudflareLanguageModel()),
         sessions=sessions or InMemorySessionRepository(),
         logger=logger,
+        observations=observations,
+        traces=traces,
     )
 
 

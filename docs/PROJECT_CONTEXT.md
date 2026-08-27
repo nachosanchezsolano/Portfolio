@@ -142,6 +142,7 @@ tarea requiera entender decisiones de diseño más amplias.
 - No poner secretos en variables `PUBLIC_` ni en el bundle del frontend.
 - Mantener las respuestas limitadas a evidencia recuperada.
 - Preservar la estructura Markdown de las respuestas, incluidos bloques de código.
+- Registrar observaciones anonimizadas del chat sin guardar IP ni PII automática.
 - Agregar o actualizar tests cuando cambie un contrato o una regla de negocio.
 - Antes de afirmar que un problema está resuelto, revisar tests, workflow y
   comportamiento real del endpoint publicado.

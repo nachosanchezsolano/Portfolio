@@ -2,6 +2,7 @@
 	"$schema": "../node_modules/wrangler/config-schema.json",
 	"name": "portfolio-api",
 	"main": "src/worker.py",
+	"account_id": "0c0f79407d5d30368d1a1e67707d1b9e",
 	"compatibility_date": "2026-08-21",
 	"compatibility_flags": [
 		"python_workers"
@@ -20,6 +21,11 @@
 			"remote": true
 		}
 	],
+	"d1_databases": [{
+		"binding": "DB",
+		"database_name": "portfolio-chat-db",
+		"database_id": "25abb4d3-8703-4c45-a65e-cb65f4818ccb"
+	}],
 	"vars": {
 		"APP_ENV": "production",
 		"ALLOWED_ORIGINS": "https://nachosanchez.com.ar,https://www.nachosanchez.com.ar",

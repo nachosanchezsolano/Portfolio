@@ -1,12 +1,15 @@
+from datetime import datetime, timezone
 from time import perf_counter
+from uuid import uuid4
 
 from application.ports.observability import Logger, NoopLogger
-from application.ports.retrieval_ports import SessionRepository
+from application.ports.retrieval_ports import ChatTraceRepository, ObservationRepository, SessionRepository
 from application.use_cases.detect_intent import DetectIntent
 from application.use_cases.rag_query import RagQuery
 from application.use_cases.response_chat import ResponseChat
 from application.use_cases.sanitize_message import SanitizeMessage
-from entities.chat import ChatAnswer, ChatSession, MessageInput
+from entities.chat import ChatAnswer, ChatMessageTrace, ChatObservation, ChatSession, ChatSessionTrace, MessageInput
+from frameworks_and_drivers.in_memory_observation_repository import InMemoryObservationRepository
 
 
 class ChatFlowController:
@@ -20,6 +23,8 @@ class ChatFlowController:
         response: ResponseChat,
         sessions: SessionRepository,
         logger: Logger | None = None,
+        observations: ObservationRepository | None = None,
+        traces: ChatTraceRepository | None = None,
     ) -> None:
         self._sanitizer = sanitizer
         self._intent = intent
@@ -27,8 +32,15 @@ class ChatFlowController:
         self._response = response
         self._sessions = sessions
         self._logger = logger or NoopLogger()
+        self._observations = observations or InMemoryObservationRepository()
+        self._traces = traces
 
-    async def execute(self, raw_message: str, session_id: str | None) -> ChatAnswer:
+    async def execute(
+        self,
+        raw_message: str,
+        session_id: str | None,
+        visitor_id: str | None = None,
+    ) -> ChatAnswer:
         started = perf_counter()
         self._logger.info(
             "chat_flow_started",
@@ -36,6 +48,20 @@ class ChatFlowController:
             input_word_count=len(raw_message.split()),
         )
         session = await self._sessions.get_or_create(session_id)
+        now = datetime.now(timezone.utc).isoformat()
+        if self._traces:
+            try:
+                await self._traces.save_session(
+                    ChatSessionTrace(
+                        session_id=session.session_id,
+                        visitor_id=visitor_id or "anonymous",
+                        started_at=now,
+                        last_seen_at=now,
+                        message_count=len(session.messages),
+                    )
+                )
+            except Exception as error:
+                self._logger.warning("chat_session_trace_failed", error_type=type(error).__name__)
         self._logger.info(
             "session_loaded",
             session_id_present=bool(session_id),
@@ -70,7 +96,8 @@ class ChatFlowController:
         )
 
         stage_started = perf_counter()
-        answer = await self._response.execute(message, decision, context, session.turns)
+        prompt = self._response.build_prompt(message, decision, context, session.turns)
+        answer = await self._response.execute_prompt(prompt)
         self._logger.info(
             "response_generated",
             duration_ms=round((perf_counter() - stage_started) * 1000, 2),
@@ -78,7 +105,59 @@ class ChatFlowController:
             output_word_count=len(answer.message.value.split()),
             fallback=not bool(context),
         )
-        answer = ChatAnswer(answer.message, answer.sources, answer.intent, session.session_id)
+        observation_id = str(uuid4())
+        answer = ChatAnswer(
+            answer.message,
+            answer.sources,
+            answer.intent,
+            session.session_id,
+            observation_id,
+        )
+        try:
+            await self._observations.save(
+                ChatObservation(
+                    observation_id=observation_id,
+                    visitor_id=visitor_id or "anonymous",
+                    session_id=session.session_id,
+                    question=message.value,
+                    answer=answer.message.value,
+                    sources=answer.sources,
+                    intent=answer.intent,
+                    context_count=len(context),
+                    latency_ms=round((perf_counter() - started) * 1000, 2),
+                    created_at=datetime.now(timezone.utc).isoformat(),
+                )
+            )
+        except Exception as error:
+            self._logger.warning(
+                "chat_observation_failed",
+                error_type=type(error).__name__,
+            )
+        if self._traces:
+            try:
+                await self._traces.save_message(
+                    ChatMessageTrace(
+                        message_id=observation_id,
+                        session_id=session.session_id,
+                        visitor_id=visitor_id or "anonymous",
+                        turn_index=len(session.turns),
+                        raw_question=raw_message,
+                        sanitized_question=message.value,
+                        retrieval_query=decision.retrieval_query,
+                        intent=decision.intent,
+                        retrieved_context=tuple(context),
+                        response_prompt_system=prompt.system,
+                        response_prompt_user=prompt.user,
+                        final_answer=answer.message.value,
+                        sources=answer.sources,
+                        context_count=len(context),
+                        latency_ms=round((perf_counter() - started) * 1000, 2),
+                        status="completed",
+                        created_at=now,
+                    )
+                )
+            except Exception as error:
+                self._logger.warning("chat_trace_failed", error_type=type(error).__name__)
         session.add_turn(message, answer.message)
         await self._sessions.save(session)
         self._logger.info(

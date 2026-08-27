@@ -12,10 +12,11 @@ class ChatController:
 
     async def ask(self, request: ChatInput) -> ChatOutput:
         message = self._syntax_sanitizer.sanitize(request.message)
-        answer = await self._flow.execute(message, request.session_id)
+        answer = await self._flow.execute(message, request.session_id, request.visitor_id)
         return ChatOutput(
             message=answer.message.value,
             sources=list(answer.sources),
             intent=answer.intent.value,
             session_id=answer.session_id or request.session_id or "",
+            observation_id=answer.observation_id,
         )

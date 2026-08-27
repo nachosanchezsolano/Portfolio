@@ -9,6 +9,9 @@ from frameworks_and_drivers.settings import settings_from_worker_env
 from frameworks_and_drivers.structured_logging import StructuredLogger
 from interface_adapters.controllers import ChatController
 from frameworks_and_drivers.providers.cloudflare.security import InMemorySyntacticSanitizer
+from frameworks_and_drivers.cloudflare_observation_repository import CloudflareD1ObservationRepository
+from frameworks_and_drivers.cloudflare_chat_trace_repository import CloudflareD1ChatTraceRepository
+from frameworks_and_drivers.in_memory_chat_trace_repository import InMemoryChatTraceRepository
 
 
 class Default(WorkerEntrypoint):
@@ -33,17 +36,38 @@ class Default(WorkerEntrypoint):
             if security is None:
                 security = build_cloudflare_security(settings)
                 self._security = security
+            observations = getattr(self, "_observations", None)
+            if observations is None:
+                from frameworks_and_drivers.in_memory_observation_repository import InMemoryObservationRepository
+
+                database = getattr(self.env, "DB", None)
+                observations = (
+                    CloudflareD1ObservationRepository(database)
+                    if database is not None
+                    else InMemoryObservationRepository()
+                )
+                self._observations = observations
+            traces = getattr(self, "_traces", None)
+            if traces is None:
+                traces = (
+                    CloudflareD1ChatTraceRepository(database)
+                    if database is not None
+                    else InMemoryChatTraceRepository()
+                )
+                self._traces = traces
             request_id = str(uuid4())
             logger = StructuredLogger(request_id=request_id, **request_fields)
             logger.info("request_started")
             application = create_app(
                 ChatController(
-                    build_cloudflare_flow(logger, sessions),
+                    build_cloudflare_flow(logger, sessions, observations, traces),
                     InMemorySyntacticSanitizer(),
                 ),
                 security,
                 settings,
                 logger,
+                observations,
+                traces,
             )
             response = await asgi.fetch(application, request, self.env)
             logger.info("request_completed", status_code=response.status)
