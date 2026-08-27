@@ -10,6 +10,7 @@ ChatInput
   → IntentResolver
   → IntentDecision(intent + retrieval query)
   → KnowledgeRetriever (RAG)
+  → BuildResponsePrompt (instructions + retrieved evidence)
   → LanguageModel (grounded context)
   → ChatOutput(message + sources + intent)
 ```

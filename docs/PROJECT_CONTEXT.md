@@ -48,6 +48,7 @@ POST /v1/chat
   → sanitización semántica
   → detección de intención con Workers AI
   → embedding y consulta Vectorize
+  → construcción del prompt principal con instrucciones de voz, recruiting y honestidad
   → respuesta grounded con Workers AI
   → ChatOutput con sources
 ```

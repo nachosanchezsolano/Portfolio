@@ -7,7 +7,7 @@ from application.use_cases.detect_intent import DetectIntent
 from application.use_cases.rag_query import RagQuery
 from application.use_cases.response_chat import ResponseChat
 from application.use_cases.sanitize_message import SanitizeMessage
-from entities.chat import ChatAnswer, Intent, IntentDecision, MessageInput, MessageOutput, RetrievedChunk
+from entities.chat import ChatAnswer, Intent, IntentDecision, MessageInput, MessageOutput, ResponsePrompt, RetrievedChunk
 
 
 class RecordingSanitizer:
@@ -41,13 +41,13 @@ class RecordingLanguageModel:
     def __init__(self, events: list[str]) -> None:
         self.events = events
 
-    async def answer(self, message, decision, context) -> ChatAnswer:
-        self.events.append(f"response:{message.value}:{len(context)}")
-        return ChatAnswer(MessageOutput("grounded answer"), (context[0].source,), decision.intent)
+    async def answer(self, prompt: ResponsePrompt) -> ChatAnswer:
+        self.events.append(f"response:{prompt.user}:{len(prompt.context)}")
+        return ChatAnswer(MessageOutput("grounded answer"), (prompt.context[0].source,), prompt.intent)
 
 
 class FailingLanguageModel(RecordingLanguageModel):
-    async def answer(self, message, decision, context) -> ChatAnswer:
+    async def answer(self, prompt: ResponsePrompt) -> ChatAnswer:
         self.events.append("response:failed")
         raise RuntimeError("model unavailable")
 
@@ -92,6 +92,21 @@ def test_flow_sanitizes_before_intent_rag_and_response() -> None:
     assert answer.intent is Intent.TECHNICAL
     assert answer.sources == ("profile/test.md",)
     assert answer.session_id == "session-1"
+
+
+def test_flow_builds_main_prompt_with_rag_context_before_response() -> None:
+    events: list[str] = []
+    flow = ChatFlowController(
+        SanitizeMessage(RecordingSanitizer(events)),
+        DetectIntent(RecordingIntentResolver(events)),
+        RagQuery(RecordingRetriever(events)),
+        ResponseChat(RecordingLanguageModel(events)),
+        RecordingSessionRepository(events),
+    )
+
+    asyncio.run(flow.execute("raw user input", "session-1"))
+
+    assert events[-2:] == ["response:normalized question:1", "session:save"]
 
 
 def test_flow_does_not_commit_session_when_response_generation_fails() -> None:

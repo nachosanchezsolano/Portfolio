@@ -1,6 +1,7 @@
 import asyncio
 
-from entities.chat import Intent, IntentDecision, MessageInput
+from application.use_cases.build_response_prompt import BuildResponsePrompt
+from entities.chat import Intent, IntentDecision, MessageInput, RetrievedChunk
 from frameworks_and_drivers.cloudflare_ai import (
     CloudflareIntentResolver,
     CloudflareLanguageModel,
@@ -101,15 +102,11 @@ def test_cloudflare_language_model_is_grounded_and_returns_sources() -> None:
     try:
         answer = asyncio.run(
             CloudflareLanguageModel().answer(
-                MessageInput("What do you build?"),
-                IntentDecision(Intent.GENERAL, "portfolio", 1),
-                [
-                    type(
-                        "Chunk",
-                        (),
-                        {"source": "profile/now.md", "content": "Evidence"},
-                    )()
-                ],
+                BuildResponsePrompt().build(
+                    MessageInput("What do you build?"),
+                    IntentDecision(Intent.GENERAL, "portfolio", 1),
+                    [RetrievedChunk("profile/now.md", "Evidence")],
+                )
             )
         )
     finally:
@@ -131,9 +128,11 @@ def test_cloudflare_language_model_returns_safe_fallback_without_context() -> No
     try:
         answer = asyncio.run(
             CloudflareLanguageModel().answer(
-                MessageInput("What do you build?"),
-                IntentDecision(Intent.GENERAL, "portfolio", 1),
-                [],
+                BuildResponsePrompt().build(
+                    MessageInput("What do you build?"),
+                    IntentDecision(Intent.GENERAL, "portfolio", 1),
+                    [],
+                )
             )
         )
     finally:
@@ -142,3 +141,18 @@ def test_cloudflare_language_model_returns_safe_fallback_without_context() -> No
     assert answer.sources == ()
     assert "evidencia suficiente" in answer.message.value
     assert env.AI.calls == []
+
+
+def test_response_prompt_is_first_person_recruiter_oriented_and_truthful() -> None:
+    prompt = BuildResponsePrompt().build(
+        MessageInput("¿Qué hiciste en este proyecto?"),
+        IntentDecision(Intent.RECRUITER, "project experience", 2),
+        [RetrievedChunk("projects/example.md", "Desarrollé una API para automatizar tareas.")],
+    )
+
+    assert "primera persona" in prompt.system
+    assert "recruiter" in prompt.system
+    assert "No inventes" in prompt.system
+    assert "projects/example.md" in prompt.system
+    assert prompt.user == "¿Qué hiciste en este proyecto?"
+    assert prompt.intent is Intent.RECRUITER

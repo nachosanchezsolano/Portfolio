@@ -75,6 +75,14 @@ class RetrievedChunk:
 
 
 @dataclass(frozen=True)
+class ResponsePrompt:
+    system: str
+    user: str
+    intent: Intent
+    context: tuple[RetrievedChunk, ...] = ()
+
+
+@dataclass(frozen=True)
 class ChatAnswer:
     message: MessageOutput
     sources: tuple[str, ...] = ()
