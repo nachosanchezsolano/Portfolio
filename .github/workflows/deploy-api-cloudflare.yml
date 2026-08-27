@@ -38,7 +38,19 @@ jobs:
         run: uv sync --group dev
 
       - name: Run tests
-        run: uv run pytest -q
+        run: uv run pytest -q -m "not token"
+
+      - name: Detect token test changes
+        id: token-tests
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            token_tests:
+              - 'api/tests/token/**'
+
+      - name: Run token-consuming tests only when their files change
+        if: steps.token-tests.outputs.token_tests == 'true'
+        run: uv run pytest -q -m token
 
   deploy:
     name: Deploy API to Cloudflare Workers

@@ -1,9 +1,13 @@
 export type ChatRole = "assistant" | "user";
+export type ChatIntent = "general" | "recruiter" | "technical";
 
 export type ChatMessage = {
   id: string;
   role: ChatRole;
   content: string;
+  sources?: string[];
+  intent?: ChatIntent;
+  sessionId?: string;
 };
 
 export type ChatState = {

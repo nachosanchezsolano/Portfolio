@@ -11,13 +11,16 @@ from frameworks_and_drivers.settings import Settings, settings_from_worker_env
 from application.ports.observability import Logger
 
 
-def build_cloudflare_flow(logger: Logger | None = None) -> ChatFlowController:
+def build_cloudflare_flow(
+    logger: Logger | None = None,
+    sessions: InMemorySessionRepository | None = None,
+) -> ChatFlowController:
     return ChatFlowController(
         sanitizer=SanitizeMessage(LocalSemanticSanitizer()),
         intent=DetectIntent(CloudflareIntentResolver()),
         rag=RagQuery(CloudflareVectorizeRetriever()),
         response=ResponseChat(CloudflareLanguageModel()),
-        sessions=InMemorySessionRepository(),
+        sessions=sessions or InMemorySessionRepository(),
         logger=logger,
     )
 

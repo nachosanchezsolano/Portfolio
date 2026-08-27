@@ -7,6 +7,7 @@ from frameworks_and_drivers.cloudflare_ai import (
     CloudflareVectorizeRetriever,
 )
 from frameworks_and_drivers.cloudflare_context import reset_worker_env, set_worker_env
+from frameworks_and_drivers.cloudflare_ai import CHAT_MODEL, EMBEDDING_MODEL, INTENT_MODEL
 
 
 class FakeAI:
@@ -56,7 +57,14 @@ def test_cloudflare_intent_adapter_parses_structured_model_output() -> None:
 
     assert decision.intent is Intent.TECHNICAL
     assert decision.retrieval_query == "software architecture"
-    assert env.AI.calls[0][0].startswith("@cf/")
+    model, payload = env.AI.calls[0]
+    assert model == INTENT_MODEL
+    assert payload["messages"][-1] == {
+        "role": "user",
+        "content": "¿Qué arquitectura usás?",
+    }
+    assert payload["temperature"] == 0
+    assert payload["max_tokens"] == 120
 
 
 def test_cloudflare_intent_adapter_falls_back_safely_on_invalid_model_output() -> None:
@@ -83,6 +91,7 @@ def test_cloudflare_retriever_embeds_query_and_reads_vector_metadata() -> None:
 
     assert chunks[0].source == "profile/now.md"
     assert chunks[0].content == "Portfolio evidence"
+    assert env.AI.calls[0] == (EMBEDDING_MODEL, {"text": ["architecture"]})
     assert env.VECTORIZE.calls == [([0.1, 0.2, 0.3], {"topK": 4, "returnMetadata": "all"})]
 
 
@@ -108,7 +117,12 @@ def test_cloudflare_language_model_is_grounded_and_returns_sources() -> None:
 
     assert answer.message.value == "Grounded response"
     assert answer.sources == ("profile/now.md",)
-    assert "Evidence" in env.AI.calls[0][1]["messages"][0]["content"]
+    model, payload = env.AI.calls[0]
+    assert model == CHAT_MODEL
+    assert payload["messages"][-1] == {"role": "user", "content": "What do you build?"}
+    assert "Evidence" in payload["messages"][0]["content"]
+    assert payload["temperature"] == 0.2
+    assert payload["max_tokens"] == 700
 
 
 def test_cloudflare_language_model_returns_safe_fallback_without_context() -> None:

@@ -17,3 +17,6 @@ dev = [
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
+markers = [
+    "token: test that calls a billable remote model or embedding service",
+]

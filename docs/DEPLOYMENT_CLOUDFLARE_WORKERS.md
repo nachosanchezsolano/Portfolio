@@ -31,10 +31,10 @@ Desde PowerShell:
 ```powershell
 cd "C:\Users\nacho\OneDrive\Documents\Job applying System\portfolio-platform\api"
 uv sync --group dev
-uv run pytest -q
+uv run pytest -q -m "not token"
 ```
 
-La suite debe terminar con 48 passed.
+La suite offline debe terminar con 50 passed y no consumir tokens.
 
 ## 2. Autenticar Wrangler
 
@@ -264,7 +264,7 @@ Documentación: [SQLite Storage API de Durable Objects](https://developers.cloud
 
 ```text
 [ ] uv sync --group dev
-[ ] uv run pytest -q
+[ ] uv run pytest -q -m "not token"
 [ ] Wrangler autenticado
 [ ] Vectorize portfolio-knowledge creado
 [ ] Vectores y metadata cargados

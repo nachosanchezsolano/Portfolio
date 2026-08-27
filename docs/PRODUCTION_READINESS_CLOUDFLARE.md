@@ -6,7 +6,7 @@ La API está preparada para desplegarse como Python Worker. La arquitectura, los
 adaptadores Cloudflare, la validación, la sanitización, el flujo de intención/RAG/
 respuesta y el contrato HTTP están implementados.
 
-La suite local está validada: `48 passed`.
+La suite local offline está validada: `50 passed`.
 
 | Área | Estado | Acción pendiente |
 | --- | --- | --- |
@@ -31,10 +31,10 @@ Desde PowerShell:
 ```powershell
 cd "C:\Users\nacho\OneDrive\Documents\Job applying System\portfolio-platform\api"
 uv sync --group dev
-uv run pytest -q
+uv run pytest -q -m "not token"
 ```
 
-Resultado esperado: `48 passed`.
+Resultado esperado: `50 passed`, sin consumir tokens.
 
 ## 2. Autenticar Cloudflare
 
@@ -209,7 +209,7 @@ Comprobar:
 ## Checklist
 
 ```text
-[ ] Tests: 48 passed
+[ ] Tests offline: 50 passed
 [ ] Cloudflare autenticado
 [ ] API token protegido
 [ ] Vectorize creado con 768 dimensiones

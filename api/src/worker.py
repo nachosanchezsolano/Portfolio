@@ -14,23 +14,34 @@ from frameworks_and_drivers.providers.cloudflare.security import InMemorySyntact
 class Default(WorkerEntrypoint):
     async def fetch(self, request):
         token = set_worker_env(self.env)
+        request_fields = {
+            "cf_ray": request.headers.get("cf-ray"),
+            "method": request.method,
+            "path": request.url.split("?", 1)[0],
+        }
+        logger = StructuredLogger(**request_fields)
         try:
             # Build the adapter at runtime so Wrangler vars are available to CORS/security.
             settings = settings_from_worker_env(self.env)
+            sessions = getattr(self, "_sessions", None)
+            if sessions is None:
+                from frameworks_and_drivers.in_memory_session_repository import InMemorySessionRepository
+
+                sessions = InMemorySessionRepository()
+                self._sessions = sessions
+            security = getattr(self, "_security", None)
+            if security is None:
+                security = build_cloudflare_security(settings)
+                self._security = security
             request_id = str(uuid4())
-            logger = StructuredLogger(
-                request_id=request_id,
-                cf_ray=request.headers.get("cf-ray"),
-                method=request.method,
-                path=request.url.split("?", 1)[0],
-            )
+            logger = StructuredLogger(request_id=request_id, **request_fields)
             logger.info("request_started")
             application = create_app(
                 ChatController(
-                    build_cloudflare_flow(logger),
+                    build_cloudflare_flow(logger, sessions),
                     InMemorySyntacticSanitizer(),
                 ),
-                build_cloudflare_security(settings),
+                security,
                 settings,
                 logger,
             )
@@ -38,7 +49,7 @@ class Default(WorkerEntrypoint):
             logger.info("request_completed", status_code=response.status)
             return response
         except Exception as error:
-            StructuredLogger().error(
+            logger.error(
                 "worker_request_failed",
                 error_type=type(error).__name__,
             )
