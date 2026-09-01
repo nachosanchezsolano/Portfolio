@@ -6,6 +6,7 @@ from application.chat_controller import ChatFlowController
 from application.use_cases.detect_intent import DetectIntent
 from application.use_cases.rag_query import RagQuery
 from application.use_cases.response_chat import ResponseChat
+from application.use_cases.build_response_prompt import BuildResponsePrompt
 from application.use_cases.sanitize_message import SanitizeMessage
 from entities.chat import ChatAnswer, Intent, IntentDecision, MessageInput, MessageOutput, ResponsePrompt, RetrievedChunk
 
@@ -123,3 +124,19 @@ def test_flow_does_not_commit_session_when_response_generation_fails() -> None:
         asyncio.run(flow.execute("raw user input", "session-1"))
 
     assert "session:save" not in events
+
+
+def test_prompt_includes_locale_and_page_context_without_treating_it_as_evidence() -> None:
+    prompt = BuildResponsePrompt().build(
+        MessageInput("¿Por qué usaste RAG?"),
+        IntentDecision(Intent.TECHNICAL, "RAG architecture"),
+        [RetrievedChunk("projects/assistant.md", "RAG evidence")],
+        locale="es",
+        page_context="AI Portfolio Assistant",
+    )
+
+    assert "Idioma preferido de la interfaz: es" in prompt.system
+    assert "AI Portfolio Assistant" in prompt.system
+    assert "no lo trates como evidencia" in prompt.system
+    assert prompt.locale == "es"
+    assert prompt.page_context == "AI Portfolio Assistant"

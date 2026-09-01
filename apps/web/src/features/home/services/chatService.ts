@@ -32,18 +32,20 @@ const isChatResponse = (value: unknown): value is ChatResponse => {
   );
 };
 
-export const askPortfolio = async (message: string, signal?: AbortSignal): Promise<ChatMessage> => {
+export type ChatRequestOptions = { signal?: AbortSignal; locale?: "en" | "es"; pageContext?: string };
+
+export const askPortfolio = async (message: string, options: ChatRequestOptions = {}): Promise<ChatMessage> => {
   const timeoutController = new AbortController();
   const timeoutId = window.setTimeout(() => timeoutController.abort(), REQUEST_TIMEOUT_MS);
   const abortFromCaller = () => timeoutController.abort();
-  signal?.addEventListener("abort", abortFromCaller, { once: true });
+  options.signal?.addEventListener("abort", abortFromCaller, { once: true });
 
   try {
     const response = await fetch(`${apiUrl}/v1/chat`, {
       method: "POST",
       headers: { "Accept": "application/json", "Content-Type": "application/json" },
-      body: JSON.stringify({ message, session_id: sessionId, visitor_id: visitorId }),
-      signal: timeoutController.signal,
+      body: JSON.stringify({ message, session_id: sessionId, visitor_id: visitorId, locale: options.locale ?? "en", page_context: options.pageContext ?? null }),
+    signal: timeoutController.signal,
     });
 
     if (!response.ok) throw new Error("No pude conectar con la base de conocimiento.");
@@ -61,6 +63,6 @@ export const askPortfolio = async (message: string, signal?: AbortSignal): Promi
     };
   } finally {
     window.clearTimeout(timeoutId);
-    signal?.removeEventListener("abort", abortFromCaller);
+    options.signal?.removeEventListener("abort", abortFromCaller);
   }
 };

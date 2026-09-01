@@ -92,6 +92,8 @@ class ResponsePrompt:
     intent: Intent
     context: tuple[RetrievedChunk, ...] = ()
     conversation_history: tuple[ConversationTurn, ...] = ()
+    locale: str = "en"
+    page_context: str | None = None
 
 
 @dataclass(frozen=True)

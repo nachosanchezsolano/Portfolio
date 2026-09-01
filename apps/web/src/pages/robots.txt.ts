@@ -1,0 +1,3 @@
+export const GET = () => new Response("User-agent: *\nAllow: /\nSitemap: https://nachosanchez.com.ar/sitemap-index.xml\n", {
+  headers: { "Content-Type": "text/plain; charset=utf-8" },
+});

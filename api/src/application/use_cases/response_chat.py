@@ -14,8 +14,10 @@ class ResponseChat:
         decision: IntentDecision,
         context: list[RetrievedChunk],
         conversation: list[ConversationTurn] | None = None,
+        locale: str = "en",
+        page_context: str | None = None,
     ) -> ChatAnswer:
-        prompt = self.build_prompt(message, decision, context, conversation)
+        prompt = self.build_prompt(message, decision, context, conversation, locale, page_context)
         return await self.execute_prompt(prompt)
 
     def build_prompt(
@@ -24,8 +26,10 @@ class ResponseChat:
         decision: IntentDecision,
         context: list[RetrievedChunk],
         conversation: list[ConversationTurn] | None = None,
+        locale: str = "en",
+        page_context: str | None = None,
     ):
-        return self._prompt_builder.build(message, decision, context, conversation)
+        return self._prompt_builder.build(message, decision, context, conversation, locale, page_context)
 
     async def execute_prompt(self, prompt):
         return await self._language_model.answer(prompt)

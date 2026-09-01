@@ -1,0 +1,18 @@
+---
+import { getProjects } from "../../../shared/content/projects";
+import Chatbot from "../../../features/home/components/Chatbot.astro";
+import type { Locale } from "../../../shared/i18n";
+import "../../../styles/global.css";
+
+export function getStaticPaths() {
+  return (["en", "es"] as const).flatMap((locale) => getProjects(locale).map((project) => ({ params: { lang: locale, slug: project.slug }, props: { project, locale } })));
+}
+const { project, locale } = Astro.props as { project: ReturnType<typeof getProjects>[number]; locale: Locale };
+const isSpanish = locale === "es";
+const siteUrl = "https://nachosanchez.com.ar";
+const canonical = `${siteUrl}/${locale}/projects/${project.slug}/`;
+const sections = project.body.split(/(?=^# )/m).filter(Boolean);
+const renderMarkdown = (section: string) => section.split("\n").map((line) => { if (line.startsWith("# ")) return `<h2>${line.slice(2)}</h2>`; if (line.startsWith("## ")) return `<h3>${line.slice(3)}</h3>`; if (!line.trim()) return ""; return `<p>${line.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>`; }).join("");
+const chatCopy = isSpanish ? { eyebrow: "Asistente del proyecto", title: project.title, subtitle: "Preguntá por el problema, la arquitectura, los trade-offs o la implementación.", welcome: `Preguntame por ${project.title}.`, placeholder: "Preguntá sobre este proyecto", send: "Enviar", disclaimer: "Las respuestas usan evidencia pública del portfolio.", offline: "El asistente no está disponible ahora.", error: "Algo salió mal.", suggestions: ["¿Qué problema resuelve?", "¿Cuáles fueron los trade-offs?", "¿Qué mejorarías?"] } : { eyebrow: "Project assistant", title: project.title, subtitle: "Ask about the problem, architecture, trade-offs or implementation.", welcome: `Ask me about ${project.title}.`, placeholder: "Ask about this project", send: "Send", disclaimer: "Answers use public portfolio evidence.", offline: "The assistant is unavailable right now.", error: "Something went wrong.", suggestions: ["What problem does this solve?", "What were the key trade-offs?", "What would you improve?"] };
+---
+<html lang={locale}><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width" /><meta name="description" content={`${project.title}: ${isSpanish ? "caso de estudio de ingeniería" : "engineering case study"} de Jorge Ignacio Sánchez.`} /><link rel="canonical" href={canonical} /><link rel="alternate" hreflang="en" href={`${siteUrl}/en/projects/${project.slug}/`} /><link rel="alternate" hreflang="es" href={`${siteUrl}/es/projects/${project.slug}/`} /><title>{project.title} | Jorge Ignacio Sánchez</title></head><body><main class="project-page"><a class="back-link" href={`/${locale}/#work`}>{isSpanish ? "← Volver al portfolio" : "← Back to portfolio"}</a><header class="project-header"><p class="eyebrow">{isSpanish ? "Caso de estudio de ingeniería" : "Project case study"}</p><h1>{project.title}</h1><p class="project-meta">{project.status} · {project.period}</p><div class="project-tags">{project.technologies.map((technology) => <span>{technology}</span>)}</div></header><article class="project-content">{sections.map((section) => <div set:html={renderMarkdown(section)} />)}</article><div class="project-assistant"><Chatbot copy={chatCopy} locale={locale} pageContext={project.title} /></div></main></body></html>

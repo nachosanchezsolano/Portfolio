@@ -1,0 +1,7 @@
+---
+import PortfolioHome from "../../features/home/components/PortfolioHome.astro";
+import type { Locale } from "../../shared/i18n";
+export function getStaticPaths() { return [{ params: { lang: "en" } }, { params: { lang: "es" } }]; }
+const locale = (Astro.params.lang === "es" ? "es" : "en") as Locale;
+---
+<PortfolioHome locale={locale} />

@@ -12,6 +12,7 @@ from frameworks_and_drivers.providers.cloudflare.security import InMemorySyntact
 from frameworks_and_drivers.cloudflare_observation_repository import CloudflareD1ObservationRepository
 from frameworks_and_drivers.cloudflare_chat_trace_repository import CloudflareD1ChatTraceRepository
 from frameworks_and_drivers.in_memory_chat_trace_repository import InMemoryChatTraceRepository
+from frameworks_and_drivers.cloudflare_session_repository import CloudflareD1SessionRepository
 
 
 class Default(WorkerEntrypoint):
@@ -26,11 +27,11 @@ class Default(WorkerEntrypoint):
         try:
             # Build the adapter at runtime so Wrangler vars are available to CORS/security.
             settings = settings_from_worker_env(self.env)
+            database = getattr(self.env, "DB", None)
             sessions = getattr(self, "_sessions", None)
             if sessions is None:
                 from frameworks_and_drivers.in_memory_session_repository import InMemorySessionRepository
-
-                sessions = InMemorySessionRepository()
+                sessions = CloudflareD1SessionRepository(database) if database is not None else InMemorySessionRepository()
                 self._sessions = sessions
             security = getattr(self, "_security", None)
             if security is None:

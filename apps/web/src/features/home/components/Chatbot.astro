@@ -1,11 +1,11 @@
 ---
 import type { getCopy } from "../../../shared/i18n";
 type ChatCopy = ReturnType<typeof getCopy>["chat"];
-interface Props { copy: ChatCopy }
+interface Props { copy: ChatCopy; locale?: "en" | "es"; pageContext?: string }
 const { copy } = Astro.props;
 ---
 
-<section class="chat-screen is-collapsed" aria-labelledby="chat-title" data-offline={copy.offline} data-error={copy.error}>
+<section class="chat-screen is-collapsed" aria-labelledby="chat-title" data-locale={Astro.props.locale ?? "en"} data-page-context={Astro.props.pageContext ?? ""} data-offline={copy.offline} data-error={copy.error}>
   <div class="chat-teaser">
     <div class="teaser-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 2 1.8 7.2L21 12l-7.2 1.8L12 21l-1.8-7.2L3 12l7.2-2.8L12 2Z" /></svg></div>
     <div class="teaser-copy"><p class="eyebrow">Professional journey</p><strong>Want to explore Jorge’s journey?</strong><small>Ask the portfolio assistant a question.</small></div>
@@ -32,6 +32,6 @@ const { copy } = Astro.props;
   const render = () => { if (!messages) return; const state = chatStore.getState(); messages.replaceChildren(...state.messages.map(({ role, content }) => appendMessage(role, content))); if (error && errorMessage) { error.hidden = !state.error; errorMessage.textContent = state.error ?? ""; retry?.toggleAttribute("hidden", !state.error); } if (form && sendButton) { form.setAttribute("aria-busy", String(state.isLoading)); sendButton.disabled = state.isLoading; sendButton.toggleAttribute("data-loading", state.isLoading); } messages.scrollTop = messages.scrollHeight; };
   const setChatOpen = (open: boolean) => { screen?.classList.toggle("is-collapsed", !open); if (open && window.matchMedia("(min-width: 761px)").matches) input?.focus(); };
   chatStore.subscribe(render); render(); document.querySelectorAll("[data-chat-open]").forEach((button) => button.addEventListener("click", () => setChatOpen(true))); document.querySelectorAll("[data-chat-close]").forEach((button) => button.addEventListener("click", () => setChatOpen(false)));
-  const submitQuestion = async (value: string) => { if (!input || chatStore.getState().isLoading) return; try { const question = validateQuestion(value); lastQuestion = question; chatStore.addMessage(createMessage("user", question)); input.value = ""; chatStore.setLoading(true); const answer = await askPortfolio(question); chatStore.addMessage(answer); } catch (caught) { chatStore.setError(caught instanceof Error && caught.message.includes("connect") ? offline : apiError); } finally { chatStore.setLoading(false); } };
+  const submitQuestion = async (value: string) => { if (!input || chatStore.getState().isLoading) return; try { const question = validateQuestion(value); lastQuestion = question; chatStore.addMessage(createMessage("user", question)); input.value = ""; chatStore.setLoading(true); const answer = await askPortfolio(question, { locale: screen?.dataset.locale === "es" ? "es" : "en", pageContext: screen?.dataset.pageContext }); chatStore.addMessage(answer); } catch (caught) { chatStore.setError(caught instanceof Error && caught.message.includes("connect") ? offline : apiError); } finally { chatStore.setLoading(false); } };
   form?.addEventListener("submit", (event) => { event.preventDefault(); void submitQuestion(input?.value ?? ""); }); retry?.addEventListener("click", () => void submitQuestion(lastQuestion)); document.querySelectorAll<HTMLButtonElement>("[data-suggestion]").forEach((button) => button.addEventListener("click", () => void submitQuestion(button.dataset.suggestion ?? ""))); input?.addEventListener("keydown", (event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); void submitQuestion(input.value); } }); input?.addEventListener("input", () => { input.style.height = "auto"; input.style.height = `${Math.min(input.scrollHeight, 160)}px`; });
 </script>

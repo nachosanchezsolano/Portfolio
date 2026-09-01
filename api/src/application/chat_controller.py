@@ -40,6 +40,8 @@ class ChatFlowController:
         raw_message: str,
         session_id: str | None,
         visitor_id: str | None = None,
+        locale: str = "en",
+        page_context: str | None = None,
     ) -> ChatAnswer:
         started = perf_counter()
         self._logger.info(
@@ -96,7 +98,7 @@ class ChatFlowController:
         )
 
         stage_started = perf_counter()
-        prompt = self._response.build_prompt(message, decision, context, session.turns)
+        prompt = self._response.build_prompt(message, decision, context, session.turns, locale, page_context)
         answer = await self._response.execute_prompt(prompt)
         self._logger.info(
             "response_generated",
