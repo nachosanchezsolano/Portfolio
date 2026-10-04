@@ -1,7 +1,7 @@
 ---
 id: project-estudio-chingon-es
 type: project
-title: Estudio Chingón: sitio institucional y liderazgo técnico
+title: "Estudio Chingón: sitio institucional y liderazgo técnico"
 visibility: public
 status: published
 technologies:

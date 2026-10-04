@@ -7,7 +7,7 @@ from application.use_cases.detect_intent import DetectIntent
 from application.use_cases.rag_query import RagQuery
 from application.use_cases.response_chat import ResponseChat
 from application.use_cases.sanitize_message import SanitizeMessage
-from entities.chat import DomainValidationError
+from entities.chat import DomainValidationError, RequestInProgressError
 from application.ports.security_ports import RequestSecurity
 from frameworks_and_drivers.in_memory_session_repository import InMemorySessionRepository
 from frameworks_and_drivers.in_memory_observation_repository import InMemoryObservationRepository
@@ -74,6 +74,8 @@ def create_app(
             return await controller.ask(request)
         except DomainValidationError as error:
             raise HTTPException(status_code=400, detail=str(error)) from error
+        except RequestInProgressError as error:
+            raise HTTPException(status_code=409, detail=str(error)) from error
 
     def require_admin_key(value: str | None) -> None:
         if not runtime_settings.admin_api_key or value != runtime_settings.admin_api_key:

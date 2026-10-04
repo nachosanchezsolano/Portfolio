@@ -10,6 +10,7 @@ technologies:
   - LangChain
   - LangGraph
   - OpenRouter
+  - Cloudflare (migration in progress)
   - SQLAlchemy
   - PostgreSQL
   - Astro
@@ -39,7 +40,7 @@ I worked as an independent developer across the entire project, including the ba
 
 # Solution
 
-The MVP uses an agent system to detect intent, query an authorized catalog, assist sales opportunities, manage appointments, and record operational metrics. The goal is to provide a more personalized experience and prioritize leads with a higher likelihood of conversion, with a future vision of adding an AI-powered CRM.
+The MVP uses an agent system to detect intent, query an authorized catalog, assist sales opportunities, manage appointments, and record operational metrics. Product loading and customer queries are working in the current development stage. The goal is to provide a more personalized experience and prioritize leads with a higher likelihood of conversion, with a future vision of adding an AI-powered CRM.
 
 # Status and confidentiality
 

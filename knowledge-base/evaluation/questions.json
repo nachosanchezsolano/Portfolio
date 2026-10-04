@@ -3,36 +3,110 @@
     "id": "profile-001",
     "question": "¿En qué tipo de oportunidades estás interesado?",
     "expected": "Busco oportunidades de Full Stack Development y AI Engineering, incluyendo opciones remotas internacionales y posiciones presenciales o híbridas en Córdoba.",
-    "relevant_sources": ["profile/profile-es.md"]
+    "relevant_sources": [
+      "profile/profile-es.md"
+    ]
   },
   {
     "id": "profile-002",
     "question": "¿Qué principios guían tu forma de construir software?",
     "expected": "Priorizo soluciones simples, seguras, observables y fáciles de evolucionar.",
-    "relevant_sources": ["profile/principles.md"]
+    "relevant_sources": [
+      "profile/principles.md"
+    ]
   },
   {
     "id": "project-001",
     "question": "¿Qué hiciste en Estudio Chingón?",
     "expected": "Trabajé en la estética, la organización del contenido, el SEO y la evolución técnica de sus sitios, y actualmente lidero proyectos web para clientes.",
-    "relevant_sources": ["projects/estudio-chingon-es.md"]
+    "relevant_sources": [
+      "projects/estudio-chingon-es.md"
+    ]
   },
   {
     "id": "project-002",
     "question": "¿Cómo construiste el sitio de Grupo Eurosa?",
     "expected": "Desarrollé una web con Next.js integrada con WordPress mediante GraphQL y adaptada al servidor existente en DonWeb.",
-    "relevant_sources": ["projects/grupo-eurosa-es.md"]
+    "relevant_sources": [
+      "projects/grupo-eurosa-es.md"
+    ]
   },
   {
     "id": "project-003",
     "question": "¿Qué parte del sistema de ventas con IA está operativa?",
     "expected": "El sistema de agentes, catálogo, agendamiento, carga de Ads, métricas y observabilidad están operativos en pruebas cerradas; WhatsApp, multiempresa y links de pago todavía no.",
-    "relevant_sources": ["projects/ai-sales-chatbot-es.md"]
+    "relevant_sources": [
+      "projects/ai-sales-chatbot-es.md"
+    ]
   },
   {
     "id": "profile-003",
     "question": "¿Qué materias o tecnologías enseñás?",
-    "expected": "Enseño Python, C++, JavaScript, desarrollo web, Arduino, estructuras de datos, Scrum, ética, legislación y testing.",
-    "relevant_sources": ["profile/profile-es.md"]
+    "expected": "Enseño Estructuras de Datos, Programación, Testing, Club de Ciencias y Ética y Legislación.",
+    "relevant_sources": [
+      "profile/profile-es.md"
+    ]
+  },
+  {
+    "id": "english-001",
+    "question": "How did you build Grupo Eurosa?",
+    "expected": "Next.js on Vercel with a WordPress CMS through GraphQL, adapted to existing DonWeb infrastructure.",
+    "relevant_sources": [
+      "projects/grupo-eurosa-en.md"
+    ]
+  },
+  {
+    "id": "english-002",
+    "question": "Which parts of the AI sales assistant are live?",
+    "expected": "Agents, catalog, scheduling, Ads and observability are in closed client testing. WhatsApp, multi-company and payment links are not operational.",
+    "relevant_sources": [
+      "projects/ai-sales-chatbot-en.md"
+    ]
+  },
+  {
+    "id": "followup-001",
+    "question": "¿Y qué CMS usaste?",
+    "history": [
+      {
+        "user": "Contame sobre Grupo Eurosa",
+        "assistant": "Desarrollé su plataforma web."
+      }
+    ],
+    "page_context": "Grupo Eurosa",
+    "retrieval_query": "Grupo Eurosa CMS WordPress GraphQL",
+    "expected": "Integré WordPress mediante GraphQL.",
+    "relevant_sources": [
+      "projects/grupo-eurosa-es.md"
+    ]
+  },
+  {
+    "id": "topic-change-001",
+    "question": "What is the AI sales chatbot stack?",
+    "history": [
+      {
+        "user": "Tell me about Grupo Eurosa",
+        "assistant": "Next.js and WordPress."
+      }
+    ],
+    "retrieval_query": "AI sales chatbot Python FastAPI LangChain LangGraph PostgreSQL",
+    "expected": "Python, FastAPI, LangChain, LangGraph, OpenRouter, SQLAlchemy and PostgreSQL.",
+    "relevant_sources": [
+      "projects/ai-sales-chatbot-en.md"
+    ]
+  },
+  {
+    "id": "abstain-001",
+    "question": "¿Cuánto facturó Grupo Eurosa gracias a la nueva web?",
+    "expected": "No tengo datos verificables de ventas o consultas.",
+    "relevant_sources": [
+      "projects/grupo-eurosa-es.md"
+    ]
+  },
+  {
+    "id": "abstain-002",
+    "question": "What is the weather in Tokyo today?",
+    "expected": "I do not have enough evidence in this portfolio to answer.",
+    "abstain": true,
+    "relevant_sources": []
   }
 ]

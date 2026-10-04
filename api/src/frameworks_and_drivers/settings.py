@@ -2,6 +2,7 @@ from functools import lru_cache
 from typing import Any
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import Field
 
 from frameworks_and_drivers.cloudflare_context import to_python
 
@@ -14,6 +15,7 @@ class Settings(BaseSettings):
     max_message_length: int = 1200
     rate_limit_requests: int = 30
     rate_limit_window_seconds: int = 60
+    rag_min_score: float = Field(default=0.7, ge=0, le=1)
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     @property
@@ -37,6 +39,7 @@ def settings_from_worker_env(env: Any) -> Settings:
         "max_message_length": binding("MAX_MESSAGE_LENGTH", 1200),
         "rate_limit_requests": binding("RATE_LIMIT_REQUESTS", 30),
         "rate_limit_window_seconds": binding("RATE_LIMIT_WINDOW_SECONDS", 60),
+        "rag_min_score": binding("RAG_MIN_SCORE", 0.7),
     }
     return Settings(**values)
 

@@ -59,9 +59,15 @@ class Default(WorkerEntrypoint):
             request_id = str(uuid4())
             logger = StructuredLogger(request_id=request_id, **request_fields)
             logger.info("request_started")
+            from frameworks_and_drivers.chat_request_repository import CloudflareD1ChatRequestRepository, InMemoryChatRequestRepository
+            requests = getattr(self, '_requests', None)
+            if requests is None:
+                request_database = getattr(self.env, 'DB', None)
+                requests = CloudflareD1ChatRequestRepository(request_database) if request_database is not None else InMemoryChatRequestRepository()
+                self._requests = requests
             application = create_app(
                 ChatController(
-                    build_cloudflare_flow(logger, sessions, observations, traces),
+                    build_cloudflare_flow(logger, sessions, observations, traces, settings, requests),
                     InMemorySyntacticSanitizer(),
                 ),
                 security,

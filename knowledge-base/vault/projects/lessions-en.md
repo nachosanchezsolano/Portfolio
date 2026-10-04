@@ -1,7 +1,7 @@
 ---
 id: project-lessions-en
 type: project
-title: Lessions: injury-risk prevention for athletes
+title: "Lessions: injury-risk prevention for athletes"
 visibility: public
 status: published
 technologies:

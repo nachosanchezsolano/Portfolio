@@ -1,7 +1,7 @@
 ---
 id: project-aquanova-es
 type: project
-title: Aquanova: monitoreo inteligente de calidad del agua
+title: "Aquanova: monitoreo inteligente de calidad del agua"
 visibility: public
 status: published
 technologies:

@@ -1,1 +1,16 @@
-{"name":"portfolio-frontend","private":true,"type":"module","scripts":{"dev":"astro dev","build":"astro build","preview":"astro preview"},"dependencies":{"astro":"latest","typescript":"latest"}}
+{
+  "name": "portfolio-frontend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "test": "node --experimental-strip-types --test --experimental-test-isolation=none tests/*.test.ts"
+  },
+  "dependencies": {
+    "astro": "latest",
+    "typescript": "latest",
+    "js-yaml": "^4.3.1"
+  }
+}

@@ -9,6 +9,10 @@ class DomainValidationError(ValueError):
     """A business rule rejected a domain value."""
 
 
+class RequestInProgressError(RuntimeError):
+    """A retry must wait for its original request to finish."""
+
+
 def count_words(value: str) -> int:
     return len(value.split())
 
@@ -83,6 +87,7 @@ class RetrievedChunk:
     source: str
     content: str
     score: float | None = None
+    section: str | None = None
 
 
 @dataclass(frozen=True)

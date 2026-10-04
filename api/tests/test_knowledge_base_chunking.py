@@ -38,3 +38,17 @@ def test_vector_id_reuses_legacy_id_for_first_chunk() -> None:
 
     assert vector_id(chunks[0]) == module.hashlib.sha256(b"profile/now.md").hexdigest()[:32]
     assert vector_id(chunks[1]) != vector_id(chunks[0])
+
+
+def test_overflow_keeps_the_entire_next_line():
+    lines = ['A' * 70, 'B' * 80, 'C' * 40]
+    chunks = chunk_documents([('example.md', '\n'.join(lines))], max_chars=100, overlap_chars=10)
+    text = '\n'.join(chunk.content for chunk in chunks)
+    assert all(line in text for line in lines)
+
+
+def test_retired_ids_are_scoped_to_index_and_model():
+    chunks = chunk_documents([('current.md', 'Current')])
+    manifest = {'indexes': {'portfolio:model': {'ids': ['removed']}, 'other:model': {'ids': ['untouched']}}}
+    assert module.retired_ids(manifest, 'portfolio', 'model', chunks) == ['removed']
+    assert module.retired_ids(manifest, 'portfolio', 'different-model', chunks) == []

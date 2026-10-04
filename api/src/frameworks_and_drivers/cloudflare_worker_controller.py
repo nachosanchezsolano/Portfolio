@@ -16,16 +16,19 @@ def build_cloudflare_flow(
     sessions: InMemorySessionRepository | None = None,
     observations=None,
     traces=None,
+    settings: Settings | None = None,
+    requests=None,
 ) -> ChatFlowController:
     return ChatFlowController(
         sanitizer=SanitizeMessage(LocalSemanticSanitizer()),
         intent=DetectIntent(CloudflareIntentResolver()),
-        rag=RagQuery(CloudflareVectorizeRetriever()),
+        rag=RagQuery(CloudflareVectorizeRetriever(min_score=(settings or Settings()).rag_min_score)),
         response=ResponseChat(CloudflareLanguageModel()),
         sessions=sessions or InMemorySessionRepository(),
         logger=logger,
         observations=observations,
         traces=traces,
+        requests=requests,
     )
 
 

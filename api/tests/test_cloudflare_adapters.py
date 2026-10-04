@@ -171,7 +171,7 @@ def test_cloudflare_language_model_falls_back_on_empty_model_output() -> None:
     finally:
         reset_worker_env(token)
 
-    assert "No pude generar" in answer.message.value
+    assert "couldn't generate" in answer.message.value
 
 
 def test_cloudflare_language_model_returns_safe_fallback_without_context() -> None:
@@ -191,7 +191,7 @@ def test_cloudflare_language_model_returns_safe_fallback_without_context() -> No
         reset_worker_env(token)
 
     assert answer.sources == ()
-    assert "evidencia suficiente" in answer.message.value
+    assert "enough evidence" in answer.message.value
     assert env.AI.calls == []
 
 

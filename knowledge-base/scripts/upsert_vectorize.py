@@ -147,7 +147,7 @@ def chunk_documents(
                         chunk_index += 1
                 buffer = ""
             else:
-                buffer = line[:overlap_chars].strip()
+                buffer = line
 
         flush()
     return chunks
@@ -184,7 +184,7 @@ def embed_documents(credentials: list[CloudflareCredentials], documents: list[Kn
         lambda credential: api_json(
             f"https://api.cloudflare.com/client/v4/accounts/{credential.account_id}/ai/run/{EMBEDDING_MODEL}",
             credential.token,
-            {"text": [chunk.content for chunk in documents]},
+            {"text": [f"{chunk.source}\n{chunk.section}\n{chunk.content}" for chunk in documents]},
         ),
     )
     vectors = result.get("data")
@@ -242,14 +242,39 @@ def upsert(credentials: list[CloudflareCredentials], index: str, documents: list
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--index", default="portfolio-knowledge")
+    parser.add_argument("--dry-run", action="store_true", help="Plan locally without credentials or remote calls")
+    parser.add_argument("--prune", action="store_true", help="Delete retired IDs recorded by previous successful syncs")
+    parser.add_argument("--manifest", type=Path, default=ROOT / 'index-manifest.json')
     args = parser.parse_args()
+    documents = chunk_documents(public_documents())
+    manifest = json.loads(args.manifest.read_text(encoding='utf-8')) if args.manifest.exists() else {'indexes': {}}
+    retired = retired_ids(manifest, args.index, EMBEDDING_MODEL, documents)
+    print(json.dumps({'index': args.index, 'model': EMBEDDING_MODEL, 'chunks': len(documents), 'retired_ids': retired, 'prune': args.prune, 'dry_run': args.dry_run}))
+    if args.dry_run:
+        return
     credentials = cloudflare_credentials()
     if not credentials:
         raise SystemExit("Set cloudflare-api-id/cloudflare-api-token or IA_API_ACCOUNT/IA_API_KEY in api/.env")
-    documents = chunk_documents(public_documents())
-    vectors = embed_documents(credentials, documents)
-    upsert(credentials, args.index, documents, vectors)
+    if documents:
+        vectors = embed_documents(credentials, documents)
+        upsert(credentials, args.index, documents, vectors)
+    if args.prune and retired:
+        with_cloudflare_fallback(credentials, lambda credential: api_json(
+            f'https://api.cloudflare.com/client/v4/accounts/{credential.account_id}/vectorize/v2/indexes/{args.index}/delete_by_ids',
+            credential.token, {'ids': retired}))
+    # Retain pending IDs until a prune succeeds; other indices are never changed.
+    ids = sorted({vector_id(chunk) for chunk in documents} | (set(retired) if not args.prune else set()))
+    manifest.setdefault('indexes', {})[f'{args.index}:{EMBEDDING_MODEL}'] = {'ids': ids}
+    args.manifest.parent.mkdir(parents=True, exist_ok=True)
+    temporary = args.manifest.with_suffix('.tmp')
+    temporary.write_text(json.dumps(manifest, indent=2), encoding='utf-8')
+    temporary.replace(args.manifest)
     print(f"Upserted {len(documents)} public chunks into {args.index}")
+
+
+def retired_ids(manifest: dict, index: str, model: str, chunks: list[KnowledgeChunk]) -> list[str]:
+    previous = set(manifest.get('indexes', {}).get(f'{index}:{model}', {}).get('ids', []))
+    return sorted(previous - {vector_id(chunk) for chunk in chunks})
 
 
 if __name__ == "__main__":

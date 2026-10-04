@@ -1,7 +1,7 @@
 ---
 id: project-grupo-eurosa-en
 type: project
-title: Grupo Eurosa: web platform and content publishing
+title: "Grupo Eurosa: web platform and content publishing"
 visibility: public
 status: published
 technologies:

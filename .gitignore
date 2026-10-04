@@ -31,6 +31,7 @@ node_modules/
 dist/
 .astro/
 .generated/
+.tmp/portfolio-rag-entry/
 
 # Test and coverage output
 .coverage

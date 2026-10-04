@@ -1,9 +1,9 @@
-import { createMessage, type ChatMessage, type ChatState } from "../entities/chat";
+import { createMessage, type ChatMessage, type ChatState } from "../entities/chat.ts";
 
 type Listener = (state: ChatState) => void;
 
 const initialState: ChatState = {
-  messages: [createMessage("assistant", "Hola. Todavía estoy armando mi historia, pero ya podés preguntarme por mis principios, proyectos o la forma en que trabajo.")],
+  messages: [],
   isLoading: false,
   error: null,
 };
@@ -12,6 +12,10 @@ let state = initialState;
 const listeners = new Set<Listener>();
 
 export const chatStore = {
+  reset: (welcome: string) => {
+    state = { messages: [createMessage('assistant', welcome)], isLoading: false, error: null };
+    listeners.forEach((listener) => listener(state));
+  },
   getState: () => state,
   subscribe: (listener: Listener) => {
     listeners.add(listener);

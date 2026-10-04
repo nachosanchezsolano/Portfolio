@@ -9,6 +9,7 @@ class ChatInput(BaseModel):
     visitor_id: str | None = Field(default=None, max_length=80, pattern=r"^[A-Za-z0-9_-]+$")
     locale: str = Field(default="en", max_length=5, pattern=r"^(en|es)$")
     page_context: str | None = Field(default=None, max_length=240)
+    request_id: str | None = Field(default=None, max_length=80, pattern=r"^[A-Za-z0-9_-]+$")
 
     @field_validator("message")
     @classmethod

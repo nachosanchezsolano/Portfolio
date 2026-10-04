@@ -1,7 +1,7 @@
 ---
 id: project-lessions-es
 type: project
-title: Lessions: prevención de lesiones en deportistas
+title: "Lessions: prevención de lesiones en deportistas"
 visibility: public
 status: published
 technologies:

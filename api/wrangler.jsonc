@@ -30,6 +30,7 @@
 		"APP_ENV": "production",
 		"ALLOWED_ORIGINS": "https://nachosanchez.com.ar,https://www.nachosanchez.com.ar",
 		"RATE_LIMIT_REQUESTS": "30",
-		"RATE_LIMIT_WINDOW_SECONDS": "60"
+		"RATE_LIMIT_WINDOW_SECONDS": "60",
+		"RAG_MIN_SCORE": "0.7"
 	}
 }

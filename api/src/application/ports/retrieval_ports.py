@@ -1,10 +1,17 @@
 from typing import Protocol
 
-from entities.chat import ChatMessageTrace, ChatObservation, ChatSession, ChatSessionTrace, RetrievedChunk
+from entities.chat import ChatAnswer, ChatMessageTrace, ChatObservation, ChatSession, ChatSessionTrace, RetrievedChunk
 
 
 class KnowledgeRetriever(Protocol):
     async def retrieve(self, query: str, limit: int = 4) -> list[RetrievedChunk]: ...
+
+
+class ChatRequestRepository(Protocol):
+    async def get(self, key: str) -> tuple[str, ChatAnswer | None] | None: ...
+    async def claim(self, key: str, fingerprint: str) -> bool: ...
+    async def complete(self, key: str, fingerprint: str, answer: ChatAnswer) -> None: ...
+    async def release(self, key: str, fingerprint: str) -> None: ...
 
 
 class SessionRepository(Protocol):

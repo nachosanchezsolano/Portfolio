@@ -12,7 +12,9 @@ class ChatController:
 
     async def ask(self, request: ChatInput) -> ChatOutput:
         message = self._syntax_sanitizer.sanitize(request.message)
-        if request.locale == "en" and request.page_context is None:
+        if request.request_id:
+            answer = await self._flow.execute(message, request.session_id, request.visitor_id, request.locale, request.page_context, request.request_id)
+        elif request.locale == "en" and request.page_context is None:
             answer = await self._flow.execute(message, request.session_id, request.visitor_id)
         else:
             answer = await self._flow.execute(message, request.session_id, request.visitor_id, request.locale, request.page_context)

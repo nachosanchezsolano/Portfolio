@@ -34,11 +34,11 @@ Professional information is usually scattered across a CV, project descriptions,
 
 # Context
 
-This project is both a professional portfolio and a public demonstration of full-stack AI product engineering. The same Markdown knowledge source powers the portfolio content and the assistant's retrieval context.
+This project is both a professional portfolio and a public demonstration of full-stack AI product engineering. It is currently under development. The same Markdown knowledge source powers the portfolio content and the assistant's retrieval context.
 
 # My role
 
-I designed and implemented the product direction, Astro frontend, FastAPI application flow, knowledge model, Cloudflare adapters, security controls, observability events and deployment documentation.
+I am designing and implementing the product direction, Astro frontend, FastAPI application flow, knowledge model, Cloudflare adapters, security controls, observability events and deployment documentation.
 
 # Architecture
 

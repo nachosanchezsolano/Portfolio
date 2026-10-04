@@ -29,7 +29,7 @@ skills:
   - Scrum
 evidence:
   github: https://github.com/nachosanchezsolano/Portfolio
-  linkedin: https://www.linkedin.com/in/jorge-ignacio-sanchez-75bb3b1a0/
+  linkedin: https://www.linkedin.com/in/jorge-ignacio-sanchez/
   demo: null
 ---
 
@@ -37,23 +37,25 @@ evidence:
 
 Soy Full Stack Developer especializado en AI Engineering, con trayectoria técnica en Data Science y desarrollo de soluciones basadas en datos. También soy docente de nivel secundario y trabajo con Aprendizaje Basado en Proyectos.
 
-Trabajo como desarrollador independiente. Me interesa construir soluciones útiles, simples, seguras, observables y fáciles de evolucionar. Prefiero entender el problema y su contexto antes de sumar complejidad.
+Desde aproximadamente 2024 trabajo como desarrollador independiente para dos clientes activos. Realizo relevamiento, reuniones, frontend, backend, despliegue, mantenimiento de infraestructura, SEO y analítica. Me interesa construir soluciones útiles, simples, seguras, observables y fáciles de evolucionar.
 
 # Experiencia
 
-Desarrollé sitios web, dashboards, automatizaciones y sistemas orientados a datos para clientes, instituciones educativas y proyectos tecnológicos. En el ámbito docente acompaño equipos de estudiantes como líder de proyecto, tomando decisiones técnicas y validando soluciones.
+Entre mis desarrollos principales se encuentran Grupo Eurosa y una plataforma web exclusiva para exhibidores, junto con su mantenimiento de infraestructura y un endpoint central. Entre marzo de 2021 y julio de 2023 trabajé de forma remunerada en el Centro de Innovación y Tecnología de La Falda, realizando mantenimiento web y desarrollando proyectos tecnológicos. Participé en más de diez proyectos y en la preparación de propuestas para obtener fondos de inversión institucional.
 
 # Docencia
 
-Enseño Python, C++, JavaScript, desarrollo web, Arduino, estructuras de datos, gestión de proyectos, metodologías Scrum, ética, legislación y testing.
+Soy docente desde agosto de 2023 y actualmente enseño Estructuras de Datos, Programación, Testing, Club de Ciencias y Ética y Legislación. Trabajo aproximadamente con 30 estudiantes por curso. Uno de los proyectos acompañados obtuvo el reconocimiento a mejor proyecto provincial en Emprende U; los estudiantes trabajaron con historias de usuario y metodologías Scrum.
 
 # Formación
 
-Completé la formación de Técnico en Ciencia de Datos y Desarrollo de Inteligencia Artificial. También cuento con formación como Web Developer, Técnico Mecánico y cursos de Tableau Data Analytics y Scrum Fundamentals. Cursé Ingeniería Mecánica y Tecnicatura en Mecatrónica sin finalizar.
+Soy Técnico Superior en Ciencia de Datos, título obtenido en 2024 en el Instituto Superior Politécnico de Córdoba. También cuento con formación como desarrollador frontend en IES (2021), Técnico Mecánico y Scrum Fundamentals (noviembre de 2022). Cursé Ingeniería Mecánica y Tecnicatura en Mecatrónica sin finalizar.
 
 # Objetivo profesional
 
-Busco oportunidades de Full Stack Development y AI Engineering. Estoy abierto a trabajo remoto internacional y a posiciones presenciales o híbridas en Córdoba, Argentina.
+Busco oportunidades de AI Engineering aplicada, backend e integración de IA. También considero posiciones de Full Stack Development. Quiero incorporarme a startups, agencias o empresas de producto para ganar experiencia en equipos profesionales. Estoy abierto a trabajo remoto internacional y a posiciones presenciales o híbridas en Córdoba, Argentina. Tengo disponibilidad para comenzar con una o dos semanas de anticipación y acepto oportunidades desde USD 1.000 brutos mensuales cuando permitan adquirir experiencia relevante.
+
+No deseo trabajar con WordPress; estoy dispuesto a aprender las demás tecnologías requeridas.
 
 # Idiomas
 
@@ -61,6 +63,6 @@ Español nativo e inglés B2. La versión inglesa de este perfil está adaptada 
 
 # Contacto
 
-Email: nacho.sanchezsolano@gmail.com
+Email: dev@nachosanchez.com.ar
 
 Teléfono: +54 3548 430444

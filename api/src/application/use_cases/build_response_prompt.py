@@ -32,7 +32,7 @@ class BuildResponsePrompt:
         page_context: str | None = None,
     ) -> ResponsePrompt:
         evidence = "\n\n".join(
-            f"[{chunk.source}] {chunk.content}" for chunk in context
+            f"[{chunk.source}] " + (f"Sección: {chunk.section}\n" if chunk.section else "") + chunk.content for chunk in context
         ) or "(No hay evidencia recuperada.)"
         history = recent_conversation(conversation or [])
         history_text = "\n\n".join(
