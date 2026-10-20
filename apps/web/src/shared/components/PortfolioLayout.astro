@@ -1,0 +1,87 @@
+---
+import { getPortfolioCopy } from '../content/portfolio';
+import type { Locale } from '../i18n';
+import LanguageSelector from './LanguageSelector.astro';
+import '../../styles/professional-portfolio.css';
+
+interface Props { locale: Locale; title?: string; description?: string; path?: string }
+const { locale, title, description, path = '' } = Astro.props;
+const copy = getPortfolioCopy(locale);
+const site = 'https://nachosanchez.com.ar';
+const canonical = `${site}/${locale}/${path}`;
+const navIds = ['work', 'experience', 'teaching', 'about'];
+const github = 'https://github.com/nachosanchezsolano/Portfolio';
+const linkedin = 'https://www.linkedin.com/in/jorge-ignacio-sanchez/';
+const year = new Date().getUTCFullYear();
+---
+<!doctype html>
+<html lang={locale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="theme-color" content="#080808" />
+    <meta name="description" content={description ?? copy.description} />
+    <title>{title ?? copy.title}</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang="es" href={`${site}/es/${path}`} />
+    <link rel="alternate" hreflang="en" href={`${site}/en/${path}`} />
+    <link rel="alternate" hreflang="x-default" href={`${site}/es/${path}`} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title ?? copy.title} />
+    <meta property="og:description" content={description ?? copy.description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:locale" content={locale === 'es' ? 'es_AR' : 'en_US'} />
+    <meta name="twitter:card" content="summary" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+    <script type="application/ld+json" set:html={JSON.stringify({ '@context': 'https://schema.org', '@type': 'Person', name: 'Jorge Ignacio Sánchez', url: `${site}/${locale}/`, jobTitle: locale === 'es' ? 'Desarrollador full stack y docente de programación' : 'Full Stack Developer & Programming Teacher', sameAs: [linkedin, github] })} />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">{copy.skip}</a>
+    <header class="site-header" data-site-header>
+      <a class="site-brand" href={`/${locale}/`} aria-label={locale === 'es' ? 'Nacho Sánchez — Inicio' : 'Nacho Sánchez — Home'}>NACHO SÁNCHEZ<span aria-hidden="true">/</span></a>
+      <nav class="desktop-nav" aria-label={locale === 'es' ? 'Navegación principal' : 'Main navigation'}>
+        {copy.nav.map((label, i) => <a href={`${path ? `/${locale}/` : ''}#${navIds[i]}`}>{label}</a>)}
+      </nav>
+      <div class="header-actions">
+        <LanguageSelector locale={locale} path={path} />
+        <a class="header-contact" href={`${path ? `/${locale}/` : ''}#contact`}>{copy.contact}<span aria-hidden="true">↗</span></a>
+        <button class="menu-toggle" type="button" data-menu-toggle aria-label={copy.menu} aria-controls="mobile-navigation" aria-expanded="false"><span class="menu-toggle-label">{copy.menu}</span><span aria-hidden="true">☰</span></button>
+      </div>
+    </header>
+    <dialog class="mobile-navigation" id="mobile-navigation" aria-label={locale === 'es' ? 'Navegación móvil' : 'Mobile navigation'}>
+      <div class="mobile-menu-top"><span>NACHO SÁNCHEZ /</span><button type="button" data-menu-close>{copy.close} ×</button></div>
+      <nav>{copy.nav.map((label, i) => <a href={`${path ? `/${locale}/` : ''}#${navIds[i]}`}><small>0{i + 1}</small>{label} <span aria-hidden="true">↗</span></a>)}<a href={`${path ? `/${locale}/` : ''}#contact`}><small>05</small>{copy.contact} ↗</a></nav>
+      <p class="mono">{copy.location}</p>
+    </dialog>
+    <main id="main-content"><slot /></main>
+    <footer class="site-footer container">
+      <div><a class="footer-name" href={`/${locale}/`}>NACHO SÁNCHEZ<span>/</span></a><p>{copy.footerRole}</p></div>
+      <nav aria-label={locale === 'es' ? 'Enlaces del pie de página' : 'Footer links'}><a href={`/${locale}/#work`}>{copy.nav[0]}</a><a href={`/${locale}/#teaching`}>{copy.nav[2]}</a><a href="mailto:dev@nachosanchez.com.ar">Email ↗</a><a href={github} target="_blank" rel="noreferrer">GitHub ↗</a><a href={linkedin} target="_blank" rel="noreferrer">LinkedIn ↗</a></nav>
+      <div class="footer-bottom mono"><span>© {year} Jorge Ignacio Sánchez</span><span>{copy.location}</span><span>ASTRO / TYPESCRIPT</span></div>
+    </footer>
+    <script>
+      import { rememberLocale } from '../i18n/localePreference';
+      import { closeMobileMenuOnDesktop } from '../navigation/mobileNavigation';
+      rememberLocale(document.documentElement.lang === 'es' ? 'es' : 'en');
+      const dialog = document.querySelector<HTMLDialogElement>('#mobile-navigation');
+      const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+      toggle?.addEventListener('click', () => { dialog?.showModal(); toggle.setAttribute('aria-expanded', 'true'); });
+      document.querySelector('[data-menu-close]')?.addEventListener('click', () => dialog?.close());
+      const desktopBreakpoint = window.matchMedia('(min-width: 801px)');
+      if (dialog) closeMobileMenuOnDesktop(dialog, desktopBreakpoint);
+      dialog?.addEventListener('close', () => {
+        toggle?.setAttribute('aria-expanded', 'false');
+        const focusTarget = desktopBreakpoint.matches ? document.querySelector<HTMLAnchorElement>('.desktop-nav a') : toggle;
+        focusTarget?.focus({ preventScroll: true });
+      });
+      dialog?.querySelectorAll('a').forEach(link => link.addEventListener('click', () => dialog.close()));
+      const header = document.querySelector('[data-site-header]');
+      const updateHeader = () => header?.classList.toggle('scrolled', window.scrollY > 16);
+      window.addEventListener('scroll', updateHeader, { passive: true });
+      updateHeader();
+    </script>
+  </body>
+</html>

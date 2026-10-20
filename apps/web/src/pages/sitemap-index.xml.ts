@@ -1,4 +1,4 @@
-import { getProjects } from "../shared/content/projects";
+import { getPublicProjects as getProjects } from "../shared/content/projects";
 
 export const GET = () => {
   const urls = ["https://nachosanchez.com.ar/en/", "https://nachosanchez.com.ar/es/", ...(["en", "es"] as const).flatMap((locale) => getProjects(locale).map((project) => `https://nachosanchez.com.ar/${locale}/projects/${project.slug}/`))];

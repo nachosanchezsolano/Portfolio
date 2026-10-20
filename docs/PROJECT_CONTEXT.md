@@ -1,5 +1,11 @@
 # Project context
 
+## Adaptación local del portfolio — 20 de octubre de 2026
+
+En `codex/portfolio-profesional`, la web tiene un diseño negro/verde ácido y foco en desarrollo full stack, freelance y docencia. El chatbot está conservado y desconectado de las páginas y puntos de entrada públicos; la API de esta rama solo sirve `/health`. El código anterior está preservado en la rama local `codex/experimental-ai-chatbot` y en `api/src/experimental_worker.py`. Ver [reactivación del asistente](AI_CHATBOT_REACTIVATION.md).
+
+La descripción de arquitectura desplegada que sigue corresponde al estado anterior. Estos cambios son locales y no se desplegaron. Las fuentes Markdown se conservan; los casos de estudio visibles se seleccionan con `getPublicProjects()`.
+
 Este documento es el punto de entrada para cualquier nueva sesión de trabajo.
 Describe el estado real del repositorio y tiene prioridad sobre documentos que
 describen una arquitectura futura o histórica.

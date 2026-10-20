@@ -34,3 +34,8 @@ export const getProjects = (locale: 'en' | 'es' = 'en') => fs.readdirSync(projec
   .filter(fileName => /^---\r?\n[\s\S]*?^visibility:\s*public\s*$/m.test(fs.readFileSync(path.join(projectsDirectory, fileName), 'utf8').split(/\r?\n---/)[0]))
   .map(fileName => parseProjectSource(fileName, fs.readFileSync(path.join(projectsDirectory, fileName), 'utf8')))
   .sort((a, b) => a.title.localeCompare(b.title));
+
+// Keep the assistant case study in the source/experimental branch without advertising
+// an unavailable feature or generating its public route and sitemap entry.
+export const getPublicProjects = (locale: 'en' | 'es' = 'en') =>
+  getProjects(locale).filter(project => project.slug !== 'ai-portfolio-assistant');

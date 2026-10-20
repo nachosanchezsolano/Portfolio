@@ -216,5 +216,8 @@ def build_local_security() -> RequestSecurity:
 
 from frameworks_and_drivers.in_memory_chat_trace_repository import InMemoryChatTraceRepository
 
-_local_traces = InMemoryChatTraceRepository()
-app = create_app(build_local_controller(_local_traces), build_local_security(), traces=_local_traces)
+# Chatbot de IA desactivado temporalmente. Implementación conservada para pruebas
+# y futura reintegración. These factory functions remain available to offline tests.
+# _local_traces = InMemoryChatTraceRepository()
+# app = create_app(build_local_controller(_local_traces), build_local_security(), traces=_local_traces)
+from frameworks_and_drivers.public_portfolio_app import app
