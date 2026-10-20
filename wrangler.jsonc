@@ -1,0 +1,10 @@
+{
+  // Root entry point for Cloudflare Builds running from the repository root.
+  // The frontend-only entry point remains apps/web/wrangler.jsonc.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "portfolio-web",
+  "compatibility_date": "2026-08-25",
+  "assets": {
+    "directory": "./apps/web/dist"
+  }
+}

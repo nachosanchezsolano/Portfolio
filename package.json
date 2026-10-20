@@ -1,0 +1,10 @@
+{
+  "name": "portfolio-platform",
+  "private": true,
+  "engines": {
+    "node": ">=22.19.0"
+  },
+  "scripts": {
+    "build": "npm --prefix apps/web ci --no-audit --no-fund && npm --prefix apps/web run build"
+  }
+}

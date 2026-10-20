@@ -7,11 +7,17 @@ on:
     paths:
       - "api/**"
       - "apps/web/**"
+      - "package.json"
+      - "package-lock.json"
+      - "wrangler.jsonc"
       - ".github/workflows/deploy-api-cloudflare.yml"
   pull_request:
     paths:
       - "api/**"
       - "apps/web/**"
+      - "package.json"
+      - "package-lock.json"
+      - "wrangler.jsonc"
       - ".github/workflows/deploy-api-cloudflare.yml"
   workflow_dispatch:
 
@@ -98,10 +104,8 @@ jobs:
           cache: npm
           cache-dependency-path: apps/web/package-lock.json
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build static site
+      - name: Build static site from repository root
+        working-directory: .
         run: npm run build
 
       - name: Check TypeScript and frontend contracts

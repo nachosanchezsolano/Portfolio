@@ -2,6 +2,12 @@
 
 > **Current local portfolio:** `codex/portfolio-profesional` presents full-stack development, freelance work and programming education using the existing bilingual Astro stack. The AI assistant is preserved but disconnected from the public site and API entry points. See [reactivation and preservation notes](docs/AI_CHATBOT_REACTIVATION.md). The engine description below remains the experimental architecture.
 
+## Build the portfolio from the repository root
+
+Run `npm run build` with Node.js 22.19 or later. The root script installs the frontend's locked dependencies and builds `apps/web`; static assets are written to `apps/web/dist`.
+
+Cloudflare Workers Builds can use root directory `/`, build command `npm run build`, and deploy command `npx wrangler deploy`. The root `wrangler.jsonc` serves only `apps/web/dist`. For a frontend root directory of `apps/web`, the existing frontend scripts and Wrangler configuration also remain supported. See [Cloudflare build settings](docs/CLOUDFLARE_ROOT_BUILD.md).
+
 An open-source, knowledge-driven AI portfolio engine.
 
 Write professional knowledge once in Markdown and use it to power portfolio pages, hybrid search, and an evidence-grounded AI assistant with verifiable citations.
