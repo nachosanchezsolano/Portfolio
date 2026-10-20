@@ -1,5 +1,7 @@
 # AI Portfolio Engine
 
+> **Current local portfolio:** `codex/portfolio-profesional` presents full-stack development, freelance work and programming education using the existing bilingual Astro stack. The AI assistant is preserved but disconnected from the public site and API entry points. See [reactivation and preservation notes](docs/AI_CHATBOT_REACTIVATION.md). The engine description below remains the experimental architecture.
+
 An open-source, knowledge-driven AI portfolio engine.
 
 Write professional knowledge once in Markdown and use it to power portfolio pages, hybrid search, and an evidence-grounded AI assistant with verifiable citations.

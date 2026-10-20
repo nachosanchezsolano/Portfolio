@@ -1,0 +1,40 @@
+---
+import type { Locale } from '../i18n';
+
+interface Props { locale: Locale; path?: string }
+const { locale, path = '' } = Astro.props;
+const languages = [{ code: 'es', name: 'Español' }, { code: 'en', name: 'English' }] as const;
+const current = languages.find(language => language.code === locale)!;
+---
+<details class="language-picker" data-language-picker>
+  <summary aria-label={locale === 'es' ? `Idioma actual: ${current.name}. Cambiar idioma` : `Current language: ${current.name}. Change language`}>
+    <svg class="language-globe" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c5 5 5 13 0 18-5-5-5-13 0-18Z"/></svg>
+    <span>{current.name}</span>
+    <svg class="language-chevron" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg>
+  </summary>
+  <nav class="language-options" aria-label={locale === 'es' ? 'Seleccionar idioma' : 'Choose language'}>
+    <span class="language-options-label">{locale === 'es' ? 'IDIOMA DEL SITIO' : 'SITE LANGUAGE'}</span>
+    {languages.map(language => <a href={`/${language.code}/${path}`} lang={language.code} hreflang={language.code} aria-current={language.code === locale ? 'page' : undefined}>
+      <span>{language.name}</span>
+      <span class="language-option-status">{language.code === locale ? (locale === 'es' ? 'Actual ✓' : 'Current ✓') : language.code.toUpperCase()}</span>
+    </a>)}
+  </nav>
+</details>
+<script>
+  document.querySelectorAll<HTMLDetailsElement>('[data-language-picker]').forEach(picker => {
+    const summary = picker.querySelector('summary');
+    picker.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && picker.open) {
+        event.preventDefault();
+        picker.open = false;
+        summary?.focus();
+      }
+    });
+    document.addEventListener('click', event => {
+      if (event.target instanceof Node && !picker.contains(event.target)) picker.open = false;
+    });
+    picker.addEventListener('focusout', event => {
+      if (!(event.relatedTarget instanceof Node) || !picker.contains(event.relatedTarget)) picker.open = false;
+    });
+  });
+</script>

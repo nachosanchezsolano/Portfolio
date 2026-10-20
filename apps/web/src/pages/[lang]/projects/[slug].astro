@@ -1,19 +1,45 @@
 ---
-import { getProjects } from "../../../shared/content/projects";
-import Chatbot from "../../../features/home/components/Chatbot.astro";
-import { getCopy, type Locale } from "../../../shared/i18n";
-import "../../../styles/global.css";
+import { getPublicProjects } from '../../../shared/content/projects';
+import PortfolioLayout from '../../../shared/components/PortfolioLayout.astro';
+import { getPortfolioCopy } from '../../../shared/content/portfolio';
+import type { Locale } from '../../../shared/i18n';
+// Chatbot de IA desactivado temporalmente. Implementación conservada para pruebas y futura reintegración.
+// import Chatbot from '../../../features/home/components/Chatbot.astro';
+// import { getCopy } from '../../../shared/i18n';
 
 export function getStaticPaths() {
-  return (["en", "es"] as const).flatMap((locale) => getProjects(locale).map((project) => ({ params: { lang: locale, slug: project.slug }, props: { project, locale } })));
+  return (['en', 'es'] as const).flatMap(locale => getPublicProjects(locale).map(project => ({ params: { lang: locale, slug: project.slug }, props: { project, locale } })));
 }
-const { project, locale } = Astro.props as { project: ReturnType<typeof getProjects>[number]; locale: Locale };
-const isSpanish = locale === "es";
-const siteUrl = "https://nachosanchez.com.ar";
-const canonical = `${siteUrl}/${locale}/projects/${project.slug}/`;
-const sections = project.body.split(/(?=^# )/m).filter(Boolean);
-const escapeHtml = (value: string) => value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-const renderMarkdown = (section: string) => section.split("\n").map((line) => { if (line.startsWith("# ")) return `<h2>${escapeHtml(line.slice(2))}</h2>`; if (line.startsWith("## ")) return `<h3>${escapeHtml(line.slice(3))}</h3>`; if (!line.trim()) return ""; return `<p>${line.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>`; }).join("");
-const chatCopy = { ...getCopy(locale).chat, ...(isSpanish ? { eyebrow: "Asistente del proyecto", title: project.title, subtitle: "Preguntá por el problema, la arquitectura, los trade-offs o la implementación.", welcome: `Preguntame por ${project.title}.`, placeholder: "Preguntá sobre este proyecto", send: "Enviar", disclaimer: "Las respuestas usan evidencia pública del portfolio.", offline: "El asistente no está disponible ahora.", error: "Algo salió mal.", suggestions: ["¿Qué problema resuelve?", "¿Cuáles fueron los trade-offs?", "¿Qué mejorarías?"] } : { eyebrow: "Project assistant", title: project.title, subtitle: "Ask about the problem, architecture, trade-offs or implementation.", welcome: `Ask me about ${project.title}.`, placeholder: "Ask about this project", send: "Send", disclaimer: "Answers use public portfolio evidence.", offline: "The assistant is unavailable right now.", error: "Something went wrong.", suggestions: ["What problem does this solve?", "What were the key trade-offs?", "What would you improve?"] }), disclaimer: getCopy(locale).chat.disclaimer };
+const { project, locale } = Astro.props as { project: ReturnType<typeof getPublicProjects>[number]; locale: Locale };
+const isSpanish = locale === 'es';
+const copy = getPortfolioCopy(locale);
+// Preserve the existing escaped Markdown subset; no runtime dependency is needed.
+const escapeHtml = (value: string) => value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const content = project.body.split('\n\n').filter(Boolean).map(block => {
+  if (block.startsWith('## ')) return `<h3>${escapeHtml(block.slice(3))}</h3>`;
+  if (block.startsWith('# ')) return `<h2>${escapeHtml(block.slice(2))}</h2>`;
+  if (block.split('\n').every(line => line.startsWith('- '))) return `<ul>${block.split('\n').map(line => `<li>${escapeHtml(line.slice(2))}</li>`).join('')}</ul>`;
+  return `<p>${escapeHtml(block).replace(/\n/g, ' ')}</p>`;
+}).join('');
+const educational = ['aquanova', 'lessions'].includes(project.slug);
 ---
-<html lang={locale}><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width" /><meta name="description" content={`${project.title}: ${isSpanish ? "caso de estudio de ingeniería" : "engineering case study"} de Jorge Ignacio Sánchez.`} /><link rel="canonical" href={canonical} /><link rel="alternate" hreflang="en" href={`${siteUrl}/en/projects/${project.slug}/`} /><link rel="alternate" hreflang="es" href={`${siteUrl}/es/projects/${project.slug}/`} /><title>{project.title} | Jorge Ignacio Sánchez</title></head><body><main class="project-page"><a class="back-link" href={`/${locale}/#work`}>{isSpanish ? "← Volver al portfolio" : "← Back to portfolio"}</a><header class="project-header"><p class="eyebrow">{isSpanish ? "Caso de estudio de ingeniería" : "Project case study"}</p><h1>{project.title}</h1><p class="project-meta">{project.status}{project.period && ` · ${project.period}`}</p><p class="project-meta">{project.role}</p><div class="project-evidence-links">{project.evidence.demo && <a class="button button-primary" href={project.evidence.demo} target="_blank" rel="noreferrer">{isSpanish ? "Ver proyecto" : "Live project"} ↗</a>}{project.evidence.github && <a class="button button-secondary" href={project.evidence.github} target="_blank" rel="noreferrer">GitHub ↗</a>}</div><div class="project-tags">{project.technologies.map((technology) => <span>{technology}</span>)}</div></header><article class="project-content">{sections.map((section) => <div set:html={renderMarkdown(section)} />)}</article><div class="project-assistant"><Chatbot copy={chatCopy} locale={locale} pageContext={project.title} /></div></main></body></html>
+<PortfolioLayout locale={locale} title={`${project.title} | Nacho Sánchez`} description={`${project.title}: ${isSpanish ? 'caso de estudio y contribución de Jorge Ignacio Sánchez' : 'case study and contribution by Jorge Ignacio Sánchez'}.`} path={`projects/${project.slug}/`}>
+  <div class="project-page container">
+    <a class="back-link" href={`/${locale}/#work`}>{isSpanish ? '← Volver a los proyectos' : '← Back to projects'}</a>
+    <header class="project-header">
+      <p class="eyebrow">{educational ? (isSpanish ? 'Docencia / Proyecto educativo' : 'Teaching / Student project') : (isSpanish ? 'Desarrollo / Caso de estudio' : 'Development / Case study')}</p>
+      <h1>{project.title}</h1>
+      <p class="project-meta">{project.status}{project.period && ` · ${project.period}`}</p>
+      <p class="project-meta">{project.role}</p>
+      <div class="project-evidence-links">
+        {project.evidence.demo && <a class="button button-primary" href={project.evidence.demo} target="_blank" rel="noreferrer">{copy.live} ↗</a>}
+        {project.evidence.github && <a class="button button-outline" href={project.evidence.github} target="_blank" rel="noreferrer">GitHub ↗</a>}
+      </div>
+      <div class="project-tags">{project.technologies.map(technology => <span>{technology}</span>)}</div>
+      {educational && <p class="project-student-note">{copy.studentWork}</p>}
+    </header>
+    <article class="project-content" set:html={content} />
+    <a class="text-link" href={`/${locale}/#contact`}>{copy.contact}<span aria-hidden="true">↗</span></a>
+    <!-- Montaje experimental desactivado: <Chatbot copy={getCopy(locale).chat} locale={locale} pageContext={project.title} /> -->
+  </div>
+</PortfolioLayout>

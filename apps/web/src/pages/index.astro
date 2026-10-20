@@ -1,25 +1,22 @@
 ---
-import '../styles/global.css';
+import '../styles/professional-portfolio.css';
 ---
-<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width"/><meta name="theme-color" content="#080b12"/><meta name="description" content="Nacho Sanchez — AI Engineer & Full Stack Developer. Explore projects, experience and applied AI."/><link rel="canonical" href="https://nachosanchez.com.ar/"/><title>Nacho Sanchez · AI Engineer</title></head>
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width"/><meta name="theme-color" content="#080808"/><meta name="description" content="Nacho Sánchez: desarrollo full stack, proyectos freelance y docencia en programación."/><link rel="canonical" href="https://nachosanchez.com.ar/"/><link rel="alternate" hreflang="es" href="https://nachosanchez.com.ar/es/"/><link rel="alternate" hreflang="en" href="https://nachosanchez.com.ar/en/"/><link rel="icon" href="/favicon.svg" type="image/svg+xml"/><title>Nacho Sánchez · Full Stack Developer & Docente</title><link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/><link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/></head>
 <body class="entry-page"><main class="entry-shell" aria-labelledby="entry-title">
-  <p class="entry-kicker">AI ENGINEERING / FULL STACK</p>
-  <div class="entry-monogram" aria-hidden="true">NS<span></span></div>
-  <h1 id="entry-title">Nacho Sanchez<span>.</span></h1>
-  <p class="entry-description"><span lang="es">Ideas que llegan a funcionar.</span><br/><span lang="en">Ideas that become working systems.</span></p>
-  <div class="entry-status" role="status"><span class="entry-loader" aria-hidden="true"></span><span data-entry-status>Preparando portfolio / Preparing portfolio</span></div>
-  <nav class="entry-languages" aria-label="Choose your language / Elegí tu idioma"><a href="/es/" lang="es" data-locale="es">Entrar en español <span aria-hidden="true">↗</span></a><a href="/en/" lang="en" data-locale="en">Enter in English <span aria-hidden="true">↗</span></a></nav>
-  <noscript><style>.entry-status { display: none; }</style><p class="entry-noscript">Elegí un idioma para entrar. / Choose a language to enter.</p></noscript>
-</main><footer class="entry-footer">Córdoba, Argentina <span>Python · TypeScript · AI</span></footer>
+  <p class="eyebrow">FULL STACK / FREELANCE / DOCENCIA</p>
+  <h1 id="entry-title">NACHO<br/><span class="acid">SÁNCHEZ /</span></h1>
+  <p><span lang="es">Desarrollo software. Enseño a construirlo.</span><br/><span lang="en">I build software. I teach how to build it.</span></p>
+  <nav class="entry-languages" aria-label="Elegí tu idioma / Choose your language"><a class="button button-primary" href="/es/" lang="es" data-locale="es">Entrar en español ↗</a><a class="button button-outline" href="/en/" lang="en" data-locale="en">Enter in English ↗</a></nav>
+  <p class="entry-footer mono">CÓRDOBA, ARGENTINA · DESARROLLO + EDUCACIÓN</p>
+</main>
 <script>
-  import { readPreferredLocale, rememberLocale, resolveLocale } from '../shared/i18n/localePreference';
-  const locale = resolveLocale(readPreferredLocale(), navigator.languages ?? [navigator.language]);
-  const status = document.querySelector('[data-entry-status]');
-  if (status) status.textContent = locale === 'es' ? 'Preparando tu portfolio en español…' : 'Preparing your portfolio in English…';
-  const timer = window.setTimeout(() => { rememberLocale(locale); window.location.replace(`/${locale}/`); }, 1200);
-  const pause = () => window.clearTimeout(timer);
+  import { readPreferredLocale, rememberLocale } from '../shared/i18n/localePreference';
+  // Only redirect returning visitors. New visitors can choose their language
+  // without a timed navigation interrupting keyboard use or reading.
+  const saved = readPreferredLocale();
+  if (saved === 'es' || saved === 'en') window.location.replace(`/${saved}/`);
   document.querySelectorAll<HTMLAnchorElement>('[data-locale]').forEach(link => {
-    link.addEventListener('focus', pause); link.addEventListener('pointerenter', pause);
-    link.addEventListener('click', () => { pause(); rememberLocale(link.dataset.locale === 'es' ? 'es' : 'en'); });
+    link.addEventListener('click', () => rememberLocale(link.dataset.locale === 'es' ? 'es' : 'en'));
   });
 </script></body></html>

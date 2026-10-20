@@ -104,6 +104,12 @@ jobs:
       - name: Build static site
         run: npm run build
 
+      - name: Check TypeScript and frontend contracts
+        run: |
+          npm run check
+          npm test
+          npm run test:site
+
   deploy-frontend:
     name: Deploy portfolio frontend to Cloudflare Workers
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
