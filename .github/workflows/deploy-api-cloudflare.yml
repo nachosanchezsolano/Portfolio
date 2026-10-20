@@ -27,6 +27,9 @@ permissions:
 jobs:
   test:
     name: API tests
+    permissions:
+      contents: read
+      pull-requests: read
     runs-on: ubuntu-latest
     defaults:
       run:
